@@ -47,9 +47,18 @@ export default async function GroupsPage() {
             return (
               <div key={group.id} className="p-4 card transition-all">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-800">{group.name}</h3>
-                    <p className="text-sm text-gray-400 mt-1 font-mono">{group.invite_code}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-violet-400 flex items-center justify-center text-sm font-black text-white overflow-hidden border-2 border-violet-300 shrink-0">
+                      {group.icon_url ? (
+                        <img src={group.icon_url} alt={group.name} className="w-full h-full object-cover" />
+                      ) : (
+                        group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-800">{group.name}</h3>
+                      <p className="text-sm text-gray-400 mt-1 font-mono">{group.invite_code}</p>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     {prompt && (

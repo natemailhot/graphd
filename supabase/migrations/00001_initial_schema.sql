@@ -39,6 +39,7 @@ create table public.groups (
   invite_code text unique not null,
   created_by uuid references public.profiles(id) not null,
   min_members integer default 4 not null check (min_members >= 4),
+  icon_url text,
   created_at timestamptz default now() not null
 );
 
@@ -46,6 +47,9 @@ alter table public.groups enable row level security;
 
 create policy "Authenticated users can create groups"
   on public.groups for insert with check (auth.uid() = created_by);
+
+create policy "Host can delete group"
+  on public.groups for delete using (created_by = auth.uid());
 
 -- Group members table (must be created before groups RLS policies that reference it)
 create table public.group_members (
@@ -208,3 +212,20 @@ create policy "Users can update own avatar"
 create policy "Avatars are publicly accessible"
   on storage.objects for select
   using (bucket_id = 'avatars');
+
+-- Storage bucket for group icons
+insert into storage.buckets (id, name, public)
+values ('group-icons', 'group-icons', true)
+on conflict (id) do nothing;
+
+create policy "Group host can upload icon"
+  on storage.objects for insert
+  with check (bucket_id = 'group-icons');
+
+create policy "Group host can update icon"
+  on storage.objects for update
+  using (bucket_id = 'group-icons');
+
+create policy "Group icons are publicly accessible"
+  on storage.objects for select
+  using (bucket_id = 'group-icons');

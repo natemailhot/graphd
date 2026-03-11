@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { removeMember, transferHost, leaveGroup } from '@/lib/api/groups'
+import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon } from '@/lib/api/groups'
 import type { GroupWithMembers } from '@/types/app'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -18,15 +18,16 @@ interface GroupDetailClientProps {
 
 export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubmitted }: GroupDetailClientProps) {
   const [copied, setCopied] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null)
   const [confirmTransfer, setConfirmTransfer] = useState<string | null>(null)
   const [confirmLeave, setConfirmLeave] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [iconUrl, setIconUrl] = useState(group.icon_url)
   const router = useRouter()
 
   const isHost = group.created_by === currentUserId
-
-  const [copiedLink, setCopiedLink] = useState(false)
 
   const copyInviteCode = () => {
     navigator.clipboard.writeText(group.invite_code)
@@ -75,21 +76,66 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
     setConfirmLeave(false)
   }
 
+  const handleDelete = async () => {
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      await deleteGroup(supabase, group.id)
+      router.push('/groups')
+      router.refresh()
+    } catch { /* ignore */ }
+    setLoading(false)
+    setConfirmDelete(false)
+  }
+
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const url = await uploadGroupIcon(supabase, group.id, file)
+      setIconUrl(url)
+      router.refresh()
+    } catch { /* ignore */ }
+    setLoading(false)
+  }
+
   const canPlay = group.members.length >= group.min_members
+
+  const initials = group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-800">{group.name}</h1>
-        <div className="mt-3 flex items-center gap-3">
-          <code className="px-3 py-1.5 card text-sm font-mono font-bold text-violet-500 tracking-wider">{group.invite_code}</code>
-          <button onClick={copyInviteCode} className="text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
-            {copied ? 'Copied!' : 'Copy Code'}
-          </button>
-          <span className="text-gray-200">|</span>
-          <button onClick={copyInviteLink} className="text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
-            {copiedLink ? 'Copied!' : 'Copy Link'}
-          </button>
+      {/* Group header with icon */}
+      <div className="flex items-center gap-4">
+        <div className="relative group">
+          <div className="w-16 h-16 rounded-2xl bg-violet-400 flex items-center justify-center text-xl font-black text-white overflow-hidden border-2 border-violet-300">
+            {iconUrl ? (
+              <img src={iconUrl} alt={group.name} className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
+          </div>
+          {isHost && (
+            <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <span className="text-white text-xs font-bold">Edit</span>
+              <input type="file" accept="image/*" onChange={handleIconUpload} className="hidden" />
+            </label>
+          )}
+        </div>
+        <div>
+          <h1 className="text-2xl font-black text-gray-800">{group.name}</h1>
+          <div className="mt-1 flex items-center gap-3">
+            <code className="px-2 py-0.5 card text-xs font-mono font-bold text-violet-500 tracking-wider">{group.invite_code}</code>
+            <button onClick={copyInviteCode} className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors">
+              {copied ? 'Copied!' : 'Copy Code'}
+            </button>
+            <span className="text-gray-200">|</span>
+            <button onClick={copyInviteLink} className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors">
+              {copiedLink ? 'Copied!' : 'Copy Link'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -125,59 +171,26 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
                   </div>
                 </div>
 
-                {/* Host controls for other members */}
                 {isHost && !isSelf && (
                   <div className="flex items-center gap-2">
                     {confirmTransfer === member.id ? (
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-gray-400">Make host?</span>
-                        <button
-                          onClick={() => handleTransfer(member.id)}
-                          disabled={loading}
-                          className="text-xs font-bold text-amber-500 hover:text-amber-600"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setConfirmTransfer(null)}
-                          className="text-xs font-bold text-gray-400"
-                        >
-                          No
-                        </button>
+                        <button onClick={() => handleTransfer(member.id)} disabled={loading} className="text-xs font-bold text-amber-500 hover:text-amber-600">Yes</button>
+                        <button onClick={() => setConfirmTransfer(null)} className="text-xs font-bold text-gray-400">No</button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setConfirmTransfer(member.id)}
-                        className="text-xs font-bold text-amber-400 hover:text-amber-500 transition-colors"
-                      >
-                        Make Host
-                      </button>
+                      <button onClick={() => setConfirmTransfer(member.id)} className="text-xs font-bold text-amber-400 hover:text-amber-500 transition-colors">Make Host</button>
                     )}
 
                     {confirmRemove === member.id ? (
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-gray-400">Remove?</span>
-                        <button
-                          onClick={() => handleRemove(member.id)}
-                          disabled={loading}
-                          className="text-xs font-bold text-red-500 hover:text-red-600"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setConfirmRemove(null)}
-                          className="text-xs font-bold text-gray-400"
-                        >
-                          No
-                        </button>
+                        <button onClick={() => handleRemove(member.id)} disabled={loading} className="text-xs font-bold text-red-500 hover:text-red-600">Yes</button>
+                        <button onClick={() => setConfirmRemove(null)} className="text-xs font-bold text-gray-400">No</button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setConfirmRemove(member.id)}
-                        className="text-xs font-bold text-red-300 hover:text-red-400 transition-colors"
-                      >
-                        Remove
-                      </button>
+                      <button onClick={() => setConfirmRemove(member.id)} className="text-xs font-bold text-red-300 hover:text-red-400 transition-colors">Remove</button>
                     )}
                   </div>
                 )}
@@ -223,12 +236,32 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
         </div>
       )}
 
-      {/* Leave group */}
-      <div className="pt-4 border-t-2 border-gray-100">
+      {/* Leave / Delete group */}
+      <div className="pt-4 border-t-2 border-gray-100 space-y-3">
         {isHost ? (
-          <p className="text-xs text-gray-300 text-center">
-            Transfer host to another member before leaving
-          </p>
+          <>
+            <p className="text-xs text-gray-300 text-center">
+              Transfer host to another member before leaving
+            </p>
+            {confirmDelete ? (
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-sm text-red-500 font-bold">Delete this group permanently?</span>
+                <button onClick={handleDelete} disabled={loading} className="text-sm font-bold text-red-600 hover:text-red-700">
+                  Yes, delete
+                </button>
+                <button onClick={() => setConfirmDelete(false)} className="text-sm font-bold text-gray-400">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full text-center text-sm font-bold text-red-300 hover:text-red-400 transition-colors"
+              >
+                Delete Group
+              </button>
+            )}
+          </>
         ) : confirmLeave ? (
           <div className="flex items-center justify-center gap-3">
             <span className="text-sm text-gray-500">Leave this group?</span>

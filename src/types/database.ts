@@ -30,6 +30,7 @@ export type Database = {
           invite_code: string
           created_by: string
           min_members: number
+          icon_url: string | null
           created_at: string
         }
         Insert: {
@@ -38,12 +39,14 @@ export type Database = {
           invite_code?: string
           created_by: string
           min_members?: number
+          icon_url?: string | null
           created_at?: string
         }
         Update: {
           name?: string
           created_by?: string
           min_members?: number
+          icon_url?: string | null
         }
         Relationships: [
           {

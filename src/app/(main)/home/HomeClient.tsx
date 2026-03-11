@@ -13,9 +13,18 @@ interface HomeClientProps {
 export function HomeClient({ group, promptId, userSubmitted, allSubmitted }: HomeClientProps) {
   return (
     <div className="card card-hover p-4 flex items-center justify-between transition-all">
-      <div>
-        <h3 className="font-bold text-gray-800">{group.name}</h3>
-        <p className="text-xs text-gray-300 font-mono mt-0.5">{group.invite_code}</p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-violet-400 flex items-center justify-center text-sm font-black text-white overflow-hidden border-2 border-violet-300 shrink-0">
+          {group.icon_url ? (
+            <img src={group.icon_url} alt={group.name} className="w-full h-full object-cover" />
+          ) : (
+            group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+          )}
+        </div>
+        <div>
+          <h3 className="font-bold text-gray-800">{group.name}</h3>
+          <p className="text-xs text-gray-300 font-mono mt-0.5">{group.invite_code}</p>
+        </div>
       </div>
       <div className="flex gap-2">
         {promptId && (
