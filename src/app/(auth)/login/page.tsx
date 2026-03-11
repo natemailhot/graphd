@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/home'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,7 +24,7 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/home')
+      router.push(redirectTo)
       router.refresh()
     }
   }
@@ -72,7 +74,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-400">
           No account?{' '}
-          <Link href="/signup" className="text-violet-500 hover:text-violet-600 font-bold">Sign up</Link>
+          <Link href={`/signup${redirectTo !== '/home' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-violet-500 hover:text-violet-600 font-bold">Sign up</Link>
         </p>
       </div>
     </div>
