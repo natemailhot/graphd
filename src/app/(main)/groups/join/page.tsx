@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { joinGroup } from '@/lib/api/groups'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function JoinGroupPage() {
+function JoinForm() {
   const searchParams = useSearchParams()
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -51,5 +51,13 @@ export default function JoinGroupPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function JoinGroupPage() {
+  return (
+    <Suspense>
+      <JoinForm />
+    </Suspense>
   )
 }
