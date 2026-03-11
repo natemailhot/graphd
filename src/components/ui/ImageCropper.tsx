@@ -31,16 +31,21 @@ export function ImageCropper({ imageSrc, cropShape, aspect, onCropDone, onCancel
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-2xl overflow-hidden w-full max-w-sm mx-4">
-        <div className="relative h-72 bg-gray-100">
+        <div className="relative h-72 bg-gray-100" style={{ position: 'relative' }}>
           <Cropper
             image={imageSrc}
             crop={crop}
             zoom={zoom}
             aspect={aspect}
             cropShape={cropShape}
+            showGrid={false}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
+            style={{
+              containerStyle: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+              mediaStyle: { maxWidth: '100%', maxHeight: '100%' },
+            }}
           />
         </div>
         <div className="p-4 space-y-3">

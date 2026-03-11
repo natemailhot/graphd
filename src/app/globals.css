@@ -84,6 +84,12 @@ body {
   box-shadow: 0 1px 0 #c4b5fd;
 }
 
+/* Fix react-easy-crop image rendering with Tailwind */
+.reactEasyCrop_Container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
 /* Input styling */
 .input-field {
   background: white;
