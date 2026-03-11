@@ -84,11 +84,15 @@ body {
   box-shadow: 0 1px 0 #c4b5fd;
 }
 
-/* Fix react-easy-crop image rendering with Tailwind */
-.reactEasyCrop_Container,
-.reactEasyCrop_Container img {
-  max-width: none !important;
-  max-height: none !important;
+/* Undo Tailwind v4 preflight img resets inside react-easy-crop.
+   Tailwind v4 preflight is @layer base, but some build pipelines
+   de-layer it, so we keep these as a safety net without !important
+   so the library's own classes still win. */
+.reactEasyCrop_Container img,
+.reactEasyCrop_Container video {
+  max-width: initial;
+  max-height: initial;
+  height: initial;
 }
 
 /* Input styling */

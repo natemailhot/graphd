@@ -39,7 +39,6 @@ export function ImageCropper({ imageSrc, cropShape, aspect, onCropDone, onCancel
             aspect={aspect}
             cropShape={cropShape}
             showGrid={false}
-            objectFit="contain"
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
