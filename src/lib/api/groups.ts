@@ -105,6 +105,14 @@ export async function leaveGroup(supabase: Client, groupId: string, userId: stri
   if (error) throw error
 }
 
+export async function toggleGameplay(supabase: Client, groupId: string, enabled: boolean) {
+  const { error } = await supabase
+    .from('groups')
+    .update({ gameplay_enabled: enabled })
+    .eq('id', groupId)
+  if (error) throw error
+}
+
 export async function deleteGroup(supabase: Client, groupId: string) {
   const { error } = await supabase
     .from('groups')

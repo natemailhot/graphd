@@ -40,6 +40,7 @@ create table public.groups (
   created_by uuid references public.profiles(id) not null,
   min_members integer default 4 not null check (min_members >= 4),
   icon_url text,
+  gameplay_enabled boolean default false not null,
   created_at timestamptz default now() not null
 );
 

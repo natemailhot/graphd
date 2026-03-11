@@ -31,6 +31,7 @@ export type Database = {
           created_by: string
           min_members: number
           icon_url: string | null
+          gameplay_enabled: boolean
           created_at: string
         }
         Insert: {
@@ -40,6 +41,7 @@ export type Database = {
           created_by: string
           min_members?: number
           icon_url?: string | null
+          gameplay_enabled?: boolean
           created_at?: string
         }
         Update: {
@@ -47,6 +49,7 @@ export type Database = {
           created_by?: string
           min_members?: number
           icon_url?: string | null
+          gameplay_enabled?: boolean
         }
         Relationships: [
           {

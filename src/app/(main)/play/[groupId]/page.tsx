@@ -30,10 +30,21 @@ export default async function PlayPage({
 
   if (group.members.length < group.min_members) {
     return (
-      <div className="glass rounded-2xl p-8 text-center">
-        <h2 className="text-xl font-semibold text-white mb-2">Not enough members</h2>
-        <p className="text-purple-300/40">
+      <div className="card rounded-2xl p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Not enough members</h2>
+        <p className="text-gray-400">
           This group needs at least {group.min_members} members to play. Currently {group.members.length}.
+        </p>
+      </div>
+    )
+  }
+
+  if (!group.gameplay_enabled) {
+    return (
+      <div className="card rounded-2xl p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Game not started yet</h2>
+        <p className="text-gray-400">
+          The host hasn&apos;t started the game for this group yet. Hang tight!
         </p>
       </div>
     )

@@ -27,7 +27,12 @@ export function HomeClient({ group, promptId, userSubmitted, allSubmitted }: Hom
         </div>
       </div>
       <div className="flex gap-2">
-        {promptId && (
+        {promptId && !group.gameplay_enabled && (
+          <span className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-blue-50 text-blue-400 border-2 border-blue-200">
+            Not started
+          </span>
+        )}
+        {promptId && group.gameplay_enabled && (
           <>
             {userSubmitted ? (
               <span className="inline-flex items-center justify-center gap-1.5 min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-green-50 text-green-500 border-2 border-green-200 box-border">

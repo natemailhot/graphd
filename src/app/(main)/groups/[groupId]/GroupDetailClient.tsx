@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon } from '@/lib/api/groups'
+import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon, toggleGameplay } from '@/lib/api/groups'
 import type { GroupWithMembers } from '@/types/app'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -96,6 +96,19 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       const supabase = createClient()
       const url = await uploadGroupIcon(supabase, group.id, file)
       setIconUrl(url)
+      router.refresh()
+    } catch { /* ignore */ }
+    setLoading(false)
+  }
+
+  const [gameplayEnabled, setGameplayEnabled] = useState(group.gameplay_enabled)
+
+  const handleEnableGameplay = async () => {
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      await toggleGameplay(supabase, group.id, true)
+      setGameplayEnabled(true)
       router.refresh()
     } catch { /* ignore */ }
     setLoading(false)
@@ -215,7 +228,28 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
         </div>
       )}
 
-      {canPlay && (
+      {canPlay && !gameplayEnabled && (
+        <div className="space-y-3">
+          <div className="p-4 rounded-xl bg-blue-50 border-2 border-blue-200 text-center">
+            <p className="text-sm text-blue-600 font-bold">
+              {isHost
+                ? 'Everyone joined? Start the game when you\'re ready!'
+                : 'Waiting for the host to start the game...'}
+            </p>
+          </div>
+          {isHost && (
+            <button
+              onClick={handleEnableGameplay}
+              disabled={loading}
+              className="w-full btn-primary py-3 text-lg"
+            >
+              {loading ? 'Starting...' : 'Start Game!'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {canPlay && gameplayEnabled && (
         <div className="space-y-3">
           {userSubmitted ? (
             <div className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-green-50 border-2 border-green-200 text-green-500 font-bold text-lg">
