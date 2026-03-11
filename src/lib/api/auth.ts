@@ -45,6 +45,7 @@ export async function uploadAvatar(
     .from('avatars')
     .getPublicUrl(filePath)
 
-  await updateProfile(supabase, userId, { avatar_url: publicUrl })
-  return publicUrl
+  const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
+  await updateProfile(supabase, userId, { avatar_url: urlWithCacheBust })
+  return urlWithCacheBust
 }

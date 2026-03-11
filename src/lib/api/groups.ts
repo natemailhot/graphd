@@ -134,11 +134,12 @@ export async function uploadGroupIcon(supabase: Client, groupId: string, file: F
     .from('group-icons')
     .getPublicUrl(filePath)
 
+  const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
   const { error } = await supabase
     .from('groups')
-    .update({ icon_url: publicUrl })
+    .update({ icon_url: urlWithCacheBust })
     .eq('id', groupId)
   if (error) throw error
 
-  return publicUrl
+  return urlWithCacheBust
 }

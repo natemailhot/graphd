@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import Cropper from 'react-easy-crop'
-import type { Area } from 'react-easy-crop'
+
+type Area = { x: number; y: number; width: number; height: number }
 
 interface ImageCropperProps {
   imageSrc: string

@@ -40,7 +40,7 @@ export function ProfileClient({ profile }: { profile: Profile }) {
       const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
       const supabase = createClient()
       const url = await uploadAvatar(supabase, profile.id, file)
-      setAvatarUrl(url + '?t=' + Date.now())
+      setAvatarUrl(url)
       setMessage('Avatar updated!')
     } catch (err: any) { setMessage(err.message) }
     setSaving(false)

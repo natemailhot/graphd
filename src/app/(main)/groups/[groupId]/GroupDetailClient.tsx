@@ -106,7 +106,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       const file = new File([blob], 'icon.jpg', { type: 'image/jpeg' })
       const supabase = createClient()
       const url = await uploadGroupIcon(supabase, group.id, file)
-      setIconUrl(url + '?t=' + Date.now())
+      setIconUrl(url)
       router.refresh()
     } catch { /* ignore */ }
     setLoading(false)
