@@ -122,24 +122,22 @@ export async function deleteGroup(supabase: Client, groupId: string) {
 }
 
 export async function uploadGroupIcon(supabase: Client, groupId: string, file: File) {
-  const fileExt = file.name.split('.').pop()
-  const filePath = `${groupId}/icon.${fileExt}`
+  const filePath = `${groupId}/icon-${Date.now()}.jpg`
 
   const { error: uploadError } = await supabase.storage
     .from('group-icons')
-    .upload(filePath, file, { upsert: true })
+    .upload(filePath, file, { upsert: true, contentType: 'image/jpeg' })
   if (uploadError) throw uploadError
 
   const { data: { publicUrl } } = supabase.storage
     .from('group-icons')
     .getPublicUrl(filePath)
 
-  const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
   const { error } = await supabase
     .from('groups')
-    .update({ icon_url: urlWithCacheBust })
+    .update({ icon_url: publicUrl })
     .eq('id', groupId)
   if (error) throw error
 
-  return urlWithCacheBust
+  return publicUrl
 }

@@ -42,7 +42,7 @@ export function ProfileClient({ profile }: { profile: Profile }) {
       const url = await uploadAvatar(supabase, profile.id, file)
       setAvatarUrl(url)
       setMessage('Avatar updated!')
-    } catch (err: any) { setMessage(err.message) }
+    } catch (err: any) { setMessage('Error: ' + err.message) }
     setSaving(false)
   }
 
@@ -65,7 +65,7 @@ export function ProfileClient({ profile }: { profile: Profile }) {
           <label htmlFor="name" className="block text-sm font-bold text-gray-600 mb-1">Display Name</label>
           <input id="name" type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full input-field" />
         </div>
-        {message && <p className="text-sm font-bold text-green-500">{message}</p>}
+        {message && <p className={`text-sm font-bold ${message.startsWith('Error') ? 'text-red-500' : 'text-green-500'}`}>{message}</p>}
         <button onClick={handleSave} disabled={saving} className="w-full btn-primary py-2.5">
           {saving ? 'Saving...' : 'Save'}
         </button>

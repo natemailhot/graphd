@@ -33,19 +33,17 @@ export async function uploadAvatar(
   userId: string,
   file: File
 ) {
-  const fileExt = file.name.split('.').pop()
-  const filePath = `${userId}/avatar.${fileExt}`
+  const filePath = `${userId}/avatar-${Date.now()}.jpg`
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(filePath, file, { upsert: true })
+    .upload(filePath, file, { upsert: true, contentType: 'image/jpeg' })
   if (uploadError) throw uploadError
 
   const { data: { publicUrl } } = supabase.storage
     .from('avatars')
     .getPublicUrl(filePath)
 
-  const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
-  await updateProfile(supabase, userId, { avatar_url: urlWithCacheBust })
-  return urlWithCacheBust
+  await updateProfile(supabase, userId, { avatar_url: publicUrl })
+  return publicUrl
 }
