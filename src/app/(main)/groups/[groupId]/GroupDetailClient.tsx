@@ -27,6 +27,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
   const [loading, setLoading] = useState(false)
   const [iconUrl, setIconUrl] = useState(group.icon_url)
   const [iconCropSrc, setIconCropSrc] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
 
   const isHost = group.created_by === currentUserId
@@ -107,8 +108,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       const supabase = createClient()
       const url = await uploadGroupIcon(supabase, group.id, file)
       setIconUrl(url)
+      setMessage(null)
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error uploading icon: ' + msg)
+    }
     setLoading(false)
   }
 
@@ -326,6 +331,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
           </button>
         )}
       </div>
+
+      {message && (
+        <div className="p-3 rounded-xl bg-red-50 border-2 border-red-200">
+          <p className="text-sm text-red-600 font-bold">{message}</p>
+        </div>
+      )}
 
       {iconCropSrc && (
         <ImageCropper
