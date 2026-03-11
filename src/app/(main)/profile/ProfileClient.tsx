@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { updateProfile, uploadAvatar } from '@/lib/api/auth'
+import { ImageCropper } from '@/components/ui/ImageCropper'
 import type { Profile } from '@/types/app'
 
 export function ProfileClient({ profile }: { profile: Profile }) {
@@ -10,6 +11,7 @@ export function ProfileClient({ profile }: { profile: Profile }) {
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
 
   const handleSave = async () => {
     setSaving(true)
@@ -22,14 +24,23 @@ export function ProfileClient({ profile }: { profile: Profile }) {
     setSaving(false)
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setCropSrc(reader.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleCropDone = async (blob: Blob) => {
+    setCropSrc(null)
     setSaving(true)
     try {
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
       const supabase = createClient()
       const url = await uploadAvatar(supabase, profile.id, file)
-      setAvatarUrl(url)
+      setAvatarUrl(url + '?t=' + Date.now())
       setMessage('Avatar updated!')
     } catch (err: any) { setMessage(err.message) }
     setSaving(false)
@@ -47,7 +58,7 @@ export function ProfileClient({ profile }: { profile: Profile }) {
           </div>
           <label className="text-sm font-bold text-violet-400 hover:text-violet-500 cursor-pointer transition-colors">
             Change avatar
-            <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+            <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
           </label>
         </div>
         <div>
@@ -59,6 +70,16 @@ export function ProfileClient({ profile }: { profile: Profile }) {
           {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
+
+      {cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          cropShape="round"
+          aspect={1}
+          onCropDone={handleCropDone}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
     </div>
   )
 }

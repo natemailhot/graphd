@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon, toggleGameplay } from '@/lib/api/groups'
+import { ImageCropper } from '@/components/ui/ImageCropper'
 import type { GroupWithMembers } from '@/types/app'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -25,6 +26,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [loading, setLoading] = useState(false)
   const [iconUrl, setIconUrl] = useState(group.icon_url)
+  const [iconCropSrc, setIconCropSrc] = useState<string | null>(null)
   const router = useRouter()
 
   const isHost = group.created_by === currentUserId
@@ -88,14 +90,23 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
     setConfirmDelete(false)
   }
 
-  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIconFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setIconCropSrc(reader.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleIconCropDone = async (blob: Blob) => {
+    setIconCropSrc(null)
     setLoading(true)
     try {
+      const file = new File([blob], 'icon.jpg', { type: 'image/jpeg' })
       const supabase = createClient()
       const url = await uploadGroupIcon(supabase, group.id, file)
-      setIconUrl(url)
+      setIconUrl(url + '?t=' + Date.now())
       router.refresh()
     } catch { /* ignore */ }
     setLoading(false)
@@ -133,7 +144,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
           {isHost && (
             <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <span className="text-white text-xs font-bold">Edit</span>
-              <input type="file" accept="image/*" onChange={handleIconUpload} className="hidden" />
+              <input type="file" accept="image/*" onChange={handleIconFileSelect} className="hidden" />
             </label>
           )}
         </div>
@@ -315,6 +326,16 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
           </button>
         )}
       </div>
+
+      {iconCropSrc && (
+        <ImageCropper
+          imageSrc={iconCropSrc}
+          cropShape="rect"
+          aspect={1}
+          onCropDone={handleIconCropDone}
+          onCancel={() => setIconCropSrc(null)}
+        />
+      )}
     </div>
   )
 }
