@@ -17,49 +17,47 @@ interface PlayClientProps {
 
 export function PlayClient({ groupId, prompt, members, currentUserId, existingPositions }: PlayClientProps) {
   const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(existingPositions.length > 0)
   const router = useRouter()
+
+  // Determine which members still need to be placed
+  const otherMembers = members.filter(m => m.id !== currentUserId)
+  const placedIds = new Set(existingPositions.map(p => p.targetUserId))
+  const newMembers = otherMembers.filter(m => !placedIds.has(m.id))
+  const isNewMemberMode = existingPositions.length > 0 && newMembers.length > 0
 
   const handleSubmit = async (positions: PlacementPosition[]) => {
     setSubmitting(true)
     try {
       const supabase = createClient()
       await submitPlacements(supabase, groupId, prompt.id, currentUserId, positions)
-      setSubmitted(true)
       router.push(`/results/${groupId}`)
     } catch {
       setSubmitting(false)
     }
   }
 
-  if (submitted) {
-    return (
-      <div className="text-center space-y-4">
-        <div className="card rounded-2xl p-8">
-          <div className="text-4xl mb-3 text-green-500">&#10003;</div>
-          <h2 className="text-xl font-bold text-gray-800">Submitted!</h2>
-          <p className="text-gray-400 mt-2">Waiting for others to finish...</p>
-        </div>
-        <button onClick={() => router.push(`/results/${groupId}`)} className="btn-secondary">
-          View Results
-        </button>
-      </div>
-    )
-  }
+  // Show only unplaced members in new-member mode
+  const membersForCanvas = isNewMemberMode ? newMembers : otherMembers
 
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h1 className="text-lg font-bold text-gray-800">Place your friends!</h1>
-        <p className="text-sm text-gray-400 mt-1">Drag each person onto the chart</p>
+        <h1 className="text-lg font-bold text-gray-800">
+          {isNewMemberMode ? 'New members joined!' : 'Place your friends!'}
+        </h1>
+        <p className="text-sm text-gray-400 mt-1">
+          {isNewMemberMode
+            ? `Place ${newMembers.length} new member${newMembers.length !== 1 ? 's' : ''} on the chart`
+            : 'Drag each person onto the chart'}
+        </p>
       </div>
       <ScatterCanvas
         xLabel={prompt.x_axis_label}
         yLabel={prompt.y_axis_label}
-        members={members.filter(m => m.id !== currentUserId)}
+        members={membersForCanvas}
         currentUserId={currentUserId}
         onSubmit={handleSubmit}
-        initialPositions={existingPositions}
+        initialPositions={[]}
         submitting={submitting}
       />
     </div>

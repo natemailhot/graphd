@@ -35,10 +35,10 @@ export function HomeClient({ group, promptId, userSubmitted, allSubmitted }: Hom
         {promptId && group.gameplay_enabled && (
           <>
             {userSubmitted ? (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-green-50 text-green-500 border-2 border-green-200 box-border">
+              <Link href={`/play/${group.id}`} className="inline-flex items-center justify-center gap-1.5 min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-green-50 text-green-500 border-2 border-green-200 box-border">
                 <span className="w-2 h-2 rounded-full bg-green-400" />
                 Submitted
-              </span>
+              </Link>
             ) : (
               <Link href={`/play/${group.id}`} className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-white bg-[#f43f5e] border-2 border-[#e11d48]">Play</Link>
             )}

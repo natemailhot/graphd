@@ -268,10 +268,10 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       {canPlay && gameplayEnabled && (
         <div className="space-y-3">
           {userSubmitted ? (
-            <div className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-green-50 border-2 border-green-200 text-green-500 font-bold text-lg">
+            <Link href={`/play/${group.id}`} className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-green-50 border-2 border-green-200 text-green-500 font-bold text-lg">
               <span className="w-3 h-3 rounded-full bg-green-400" />
               Submitted
-            </div>
+            </Link>
           ) : (
             <Link href={`/play/${group.id}`} className="block w-full btn-primary py-3 text-center text-lg">
               Play Today&apos;s Prompt
