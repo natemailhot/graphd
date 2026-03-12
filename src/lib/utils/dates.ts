@@ -1,5 +1,5 @@
 export function getTodayUTC(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' })
 }
 
 export function formatDate(dateStr: string): string {
