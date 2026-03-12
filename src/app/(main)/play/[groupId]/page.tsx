@@ -52,16 +52,6 @@ export default async function PlayPage({
 
   const existingPlacements = await getUserPlacements(supabase, groupId, prompt.id, user.id)
 
-  // Check if there are new members the user hasn't placed yet
-  const otherMembers = group.members.filter(m => m.id !== user.id)
-  const placedIds = new Set(existingPlacements.map(p => p.target_user_id))
-  const hasNewMembers = otherMembers.some(m => !placedIds.has(m.id))
-
-  // Fully submitted with no new members → go to results
-  if (existingPlacements.length > 0 && !hasNewMembers) {
-    redirect(`/results/${groupId}`)
-  }
-
   const existingPositions = existingPlacements.map(p => ({
     targetUserId: p.target_user_id,
     x: p.x_value,
