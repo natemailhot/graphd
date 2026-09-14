@@ -29,7 +29,7 @@ function LoginForm() {
     }
   }
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
+  const handleOAuth = async (provider: 'google') => {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider,
@@ -67,7 +67,6 @@ function LoginForm() {
 
         <div className="flex gap-3">
           <button onClick={() => handleOAuth('google')} className="flex-1 btn-secondary py-2 text-sm">Google</button>
-          <button onClick={() => handleOAuth('github')} className="flex-1 btn-secondary py-2 text-sm">GitHub</button>
         </div>
       </div>
 
