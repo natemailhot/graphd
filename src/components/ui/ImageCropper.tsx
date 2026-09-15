@@ -5,7 +5,11 @@ import Cropper from 'react-easy-crop'
 
 type Area = { x: number; y: number; width: number; height: number }
 
-const MIN_ZOOM = 0.5
+// Cropper's objectFit="contain" makes zoom=1 show the whole photo already
+// (letterboxed to fit the crop circle). Zooming below 1 would just shrink
+// that fully-visible image further, revealing blank space around it — so
+// 1 is the correct lower bound, not an arbitrary one.
+const MIN_ZOOM = 1
 const MAX_ZOOM = 3
 
 interface ImageCropperProps {
@@ -41,6 +45,7 @@ export function ImageCropper({ imageSrc, cropShape, aspect, onCropDone, onCancel
             zoom={zoom}
             minZoom={MIN_ZOOM}
             maxZoom={MAX_ZOOM}
+            objectFit="contain"
             aspect={aspect}
             cropShape={cropShape}
             showGrid={false}
