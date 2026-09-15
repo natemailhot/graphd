@@ -27,7 +27,7 @@ export default async function GroupsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-gray-800">Groups</h1>
         <div className="flex gap-2">
           <Link href="/groups/new" className="btn-primary text-sm">Create</Link>
@@ -46,8 +46,8 @@ export default async function GroupsPage() {
             const status = statusMap.get(group.id)
             return (
               <div key={group.id} className="p-4 card transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-violet-400 flex items-center justify-center text-sm font-black text-white overflow-hidden border-2 border-violet-300 shrink-0">
                       {group.icon_url ? (
                         <img src={group.icon_url} alt={group.name} className="w-full h-full object-cover" />
@@ -55,12 +55,12 @@ export default async function GroupsPage() {
                         group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       )}
                     </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800">{group.name}</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-gray-800 truncate">{group.name}</h3>
                       <p className="text-sm text-gray-400 mt-1 font-mono">{group.invite_code}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {prompt && (
                       <>
                         {status?.userSubmitted ? (

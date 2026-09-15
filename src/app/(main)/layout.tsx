@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/api/auth'
 import Link from 'next/link'
 import { LogoutButton } from '@/components/layout/LogoutButton'
+import { BottomNav } from '@/components/layout/BottomNav'
 
 export default async function MainLayout({
   children,
@@ -25,7 +26,7 @@ export default async function MainLayout({
           <Link href="/home" className="text-2xl font-black text-gradient">
             Graphd
           </Link>
-          <div className="flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-5">
             <Link href="/home" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">Home</Link>
             <Link href="/groups" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">Groups</Link>
             <Link href="/history" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">History</Link>
@@ -41,11 +42,15 @@ export default async function MainLayout({
             </Link>
             <LogoutButton />
           </div>
+          <div className="md:hidden">
+            <LogoutButton />
+          </div>
         </div>
       </nav>
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-6">
         {children}
       </main>
+      <BottomNav profile={profile} />
     </div>
   )
 }

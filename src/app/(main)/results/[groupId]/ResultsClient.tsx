@@ -81,7 +81,7 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
           </div>
           {isHost && (
-            <div className="flex justify-center gap-4 mt-5">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-5">
               <button
                 onClick={() => setOverrideView(true)}
                 className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
@@ -138,7 +138,7 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
           Partial results (only visible to you) — {submittedUserIds.size} of {totalMembers} submitted
         </p>
       )}
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-green-50 text-green-500 border-2 border-green-200">
           Results
         </span>
@@ -178,7 +178,7 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
         <AwardsPanel positions={averaged} awardLabels={prompt.award_labels} />
       )}
       <div className="space-y-2">
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             onClick={() => setLeaderboardScope('today')}
             className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${

@@ -216,9 +216,9 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
             const accuracy = accuracyByUserId.get(member.id)
 
             return (
-              <div key={member.id} className="flex items-center justify-between p-3 card">
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-full ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-xs font-black text-white overflow-hidden`}>
+              <div key={member.id} className="flex flex-wrap items-center justify-between gap-y-2 p-3 card">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 rounded-full shrink-0 ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-xs font-black text-white overflow-hidden`}>
                     {member.avatar_url ? (
                       <img src={member.avatar_url} alt={member.display_name} className="w-full h-full object-cover" />
                     ) : (
@@ -337,7 +337,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
               Transfer host to another member before leaving
             </p>
             {confirmDelete ? (
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
                 <span className="text-sm text-red-500 font-bold">Delete this group permanently?</span>
                 <button onClick={handleDelete} disabled={loading} className="text-sm font-bold text-red-600 hover:text-red-700">
                   Yes, delete
@@ -356,7 +356,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
             )}
           </>
         ) : confirmLeave ? (
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
             <span className="text-sm text-gray-500">Leave this group?</span>
             <button onClick={handleLeave} disabled={loading} className="text-sm font-bold text-red-500 hover:text-red-600">
               Yes, leave

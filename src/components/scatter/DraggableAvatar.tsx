@@ -50,7 +50,7 @@ export function DraggableAvatar({
         }}
       >
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
           style={{ background: color, boxShadow: `0 0 0 2px ${ringColor}, 0 4px 12px ${color}40` }}
         >
           {member.avatar_url ? (
@@ -80,6 +80,9 @@ export function DraggableAvatar({
           <circle cx={x} cy={y} r={16} />
         </clipPath>
       </defs>
+
+      {/* Larger invisible hit area so dragging works with a finger, not just a precise cursor */}
+      {!readOnly && <circle cx={x} cy={y} r={26} fill="transparent" pointerEvents="all" />}
 
       {member.avatar_url ? (
         <>
