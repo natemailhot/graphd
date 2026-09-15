@@ -33,7 +33,8 @@ export async function joinGroup(supabase: Client, inviteCode: string, userId: st
   const { error: memberError } = await supabase
     .from('group_members')
     .insert({ group_id: group.id, user_id: userId })
-  if (memberError) throw memberError
+  // 23505 = unique_violation — already a member, treat as a successful (re)join
+  if (memberError && memberError.code !== '23505') throw memberError
 
   return group
 }
