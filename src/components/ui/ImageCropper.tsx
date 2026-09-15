@@ -5,6 +5,9 @@ import Cropper from 'react-easy-crop'
 
 type Area = { x: number; y: number; width: number; height: number }
 
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 3
+
 interface ImageCropperProps {
   imageSrc: string
   cropShape: 'round' | 'rect'
@@ -36,6 +39,8 @@ export function ImageCropper({ imageSrc, cropShape, aspect, onCropDone, onCancel
             image={imageSrc}
             crop={crop}
             zoom={zoom}
+            minZoom={MIN_ZOOM}
+            maxZoom={MAX_ZOOM}
             aspect={aspect}
             cropShape={cropShape}
             showGrid={false}
@@ -49,8 +54,8 @@ export function ImageCropper({ imageSrc, cropShape, aspect, onCropDone, onCancel
             <span className="text-xs font-bold text-gray-400">Zoom</span>
             <input
               type="range"
-              min={1}
-              max={3}
+              min={MIN_ZOOM}
+              max={MAX_ZOOM}
               step={0.05}
               value={zoom}
               onChange={e => setZoom(Number(e.target.value))}
