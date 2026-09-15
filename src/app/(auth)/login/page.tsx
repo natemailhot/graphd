@@ -74,6 +74,9 @@ function LoginForm() {
         No account?{' '}
         <Link href={`/signup${redirectTo !== '/home' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-violet-500 hover:text-violet-600 font-bold">Sign up</Link>
       </p>
+      <p className="mt-2 text-center text-sm">
+        <Link href="/how-it-works" className="text-gray-400 hover:text-violet-500 font-bold transition-colors">How does it work?</Link>
+      </p>
     </div>
   )
 }
