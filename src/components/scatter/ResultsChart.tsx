@@ -2,6 +2,7 @@
 
 import type { AveragedPosition, PlacementPosition } from '@/types/app'
 import { resolveOverlaps } from '@/lib/utils/declutter'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 const SIZE = 460
 const MARGIN = 50
@@ -128,7 +129,7 @@ export function ResultsChart({
           const sy = fromY + (dy / dist) * startOffset
           const ex = toX - (dx / dist) * endOffset
           const ey = toY - (dy / dist) * endOffset
-          const initials = highlighted.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+          const avatarEmoji = getAvatarEmoji(highlighted.profile.id)
 
           return (
             <g>
@@ -149,8 +150,8 @@ export function ResultsChart({
                 strokeWidth="1.5"
                 strokeDasharray="3 2"
               />
-              <text x={fromX} y={fromY} textAnchor="middle" dy="3" fill="#f43f5e" fontSize="8" fontWeight="bold">
-                {initials}
+              <text x={fromX} y={fromY} textAnchor="middle" dy="3" fontSize="10">
+                {avatarEmoji}
               </text>
             </g>
           )
@@ -161,7 +162,7 @@ export function ResultsChart({
           const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
           const isMe = pos.targetUserId === currentUserId
           const isHighlighted = pos.targetUserId === highlightUserId
-          const initials = pos.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+          const avatarEmoji = getAvatarEmoji(pos.profile.id)
           const dot = resolvedMap.get(pos.targetUserId)!
           const cx = dot.x
           const cy = dot.y
@@ -194,8 +195,8 @@ export function ResultsChart({
                   pointerEvents="none"
                 />
               ) : (
-                <text x={cx} y={cy} textAnchor="middle" dy="3.5" fill="white" fontSize="9" fontWeight="bold">
-                  {initials}
+                <text x={cx} y={cy} textAnchor="middle" dy="3.5" fontSize="14">
+                  {avatarEmoji}
                 </text>
               )}
             </g>

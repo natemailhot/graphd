@@ -2,6 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core'
 import type { Profile } from '@/types/app'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 interface DraggableAvatarProps {
   member: Profile
@@ -29,12 +30,7 @@ export function DraggableAvatar({
     disabled: readOnly,
   })
 
-  const initials = member.display_name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const avatarEmoji = getAvatarEmoji(member.id)
 
   if (inTray) {
     return (
@@ -50,13 +46,13 @@ export function DraggableAvatar({
         }}
       >
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-base overflow-hidden"
           style={{ background: color, boxShadow: `0 0 0 2px ${ringColor}, 0 4px 12px ${color}40` }}
         >
           {member.avatar_url ? (
             <img src={member.avatar_url} alt={member.display_name} className="w-full h-full object-cover" />
           ) : (
-            initials
+            avatarEmoji
           )}
         </div>
         <span className="text-[10px] text-gray-400 max-w-[60px] truncate">{member.display_name}</span>
@@ -124,12 +120,10 @@ export function DraggableAvatar({
             y={y}
             textAnchor="middle"
             dy="3.5"
-            fill="white"
-            fontSize="9"
-            fontWeight="bold"
+            fontSize="14"
             pointerEvents="none"
           >
-            {initials}
+            {avatarEmoji}
           </text>
         </>
       )}

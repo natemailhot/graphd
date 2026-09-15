@@ -4,6 +4,7 @@ import { getProfile } from '@/lib/api/auth'
 import Link from 'next/link'
 import { LogoutButton } from '@/components/layout/LogoutButton'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 export default async function MainLayout({
   children,
@@ -34,8 +35,8 @@ export default async function MainLayout({
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover border-2 border-gray-200" />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-violet-400 flex items-center justify-center text-[8px] font-black text-white">
-                  {profile?.display_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?'}
+                <div className="w-6 h-6 rounded-full bg-violet-400 flex items-center justify-center text-xs">
+                  {profile ? getAvatarEmoji(profile.id) : '❓'}
                 </div>
               )}
               Profile

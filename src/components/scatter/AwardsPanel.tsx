@@ -3,6 +3,7 @@
 import type { AveragedPosition } from '@/types/app'
 import type { AwardLabels } from '@/types/database'
 import { computeAwardWinners } from '@/lib/utils/awards'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 interface AwardsPanelProps {
   positions: AveragedPosition[]
@@ -23,11 +24,11 @@ export function AwardsPanel({ positions, awardLabels }: AwardsPanelProps) {
             {label}
           </p>
           <div className="flex items-center justify-center gap-1.5">
-            <div className="w-6 h-6 rounded-full bg-violet-400 flex items-center justify-center text-[9px] font-black text-white overflow-hidden shrink-0">
+            <div className="w-6 h-6 rounded-full bg-violet-400 flex items-center justify-center text-xs overflow-hidden shrink-0">
               {winner.profile.avatar_url ? (
                 <img src={winner.profile.avatar_url} alt={winner.profile.display_name} className="w-full h-full object-cover" />
               ) : (
-                winner.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                getAvatarEmoji(winner.profile.id)
               )}
             </div>
             <span className="text-sm font-bold text-gray-700 truncate">{winner.profile.display_name}</span>

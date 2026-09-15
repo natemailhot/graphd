@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon, toggleGameplay } from '@/lib/api/groups'
 import { getGroupLeaderboard } from '@/lib/api/placements'
 import { ImageCropper } from '@/components/ui/ImageCropper'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 import type { GroupWithMembers, LeaderboardRow } from '@/types/app'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -218,11 +219,11 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
             return (
               <div key={member.id} className="flex flex-wrap items-center justify-between gap-y-2 p-3 card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-9 h-9 rounded-full shrink-0 ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-xs font-black text-white overflow-hidden`}>
+                  <div className={`w-9 h-9 rounded-full shrink-0 ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-sm overflow-hidden`}>
                     {member.avatar_url ? (
                       <img src={member.avatar_url} alt={member.display_name} className="w-full h-full object-cover" />
                     ) : (
-                      member.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      getAvatarEmoji(member.id)
                     )}
                   </div>
                   <div>

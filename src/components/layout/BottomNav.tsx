@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Profile } from '@/types/app'
+import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 interface BottomNavProps {
   profile: Profile | null
@@ -84,7 +85,7 @@ export function BottomNav({ profile }: BottomNavProps) {
           className="flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0"
         >
           <div
-            className={`w-[22px] h-[22px] rounded-full overflow-hidden flex items-center justify-center text-[8px] font-black text-white ${
+            className={`w-[22px] h-[22px] rounded-full overflow-hidden flex items-center justify-center text-xs ${
               profileActive ? 'ring-2 ring-violet-400' : ''
             }`}
             style={{ background: profileActive ? '#8b5cf6' : '#c4b5fd' }}
@@ -92,7 +93,7 @@ export function BottomNav({ profile }: BottomNavProps) {
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              profile?.display_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?'
+              profile ? getAvatarEmoji(profile.id) : '❓'
             )}
           </div>
           <span className={`text-[10px] font-bold ${profileActive ? 'text-violet-500' : 'text-gray-400'}`}>
