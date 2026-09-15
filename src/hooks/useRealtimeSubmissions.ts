@@ -2,18 +2,23 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getSubmissionStatus } from '@/lib/api/placements'
+import { getSubmissionStatus, getPublicationStatus } from '@/lib/api/placements'
 
 export function useRealtimeSubmissions(groupId: string, promptId: string) {
   const [submittedUserIds, setSubmittedUserIds] = useState<Set<string>>(new Set())
   const [totalMembers, setTotalMembers] = useState(0)
+  const [isPublished, setIsPublished] = useState(false)
 
   const refresh = useCallback(async () => {
     if (!groupId || !promptId) return
     const supabase = createClient()
-    const data = await getSubmissionStatus(supabase, groupId, promptId)
+    const [data, published] = await Promise.all([
+      getSubmissionStatus(supabase, groupId, promptId),
+      getPublicationStatus(supabase, groupId, promptId),
+    ])
     setTotalMembers(data.length)
     setSubmittedUserIds(new Set(data.filter(d => d.has_submitted).map(d => d.user_id)))
+    setIsPublished(published)
   }, [groupId, promptId])
 
   useEffect(() => {
@@ -36,6 +41,30 @@ export function useRealtimeSubmissions(groupId: string, promptId: string) {
           refresh()
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'group_members',
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          refresh()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'result_publications',
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          refresh()
+        }
+      )
       .subscribe()
 
     return () => {
@@ -45,5 +74,5 @@ export function useRealtimeSubmissions(groupId: string, promptId: string) {
 
   const allSubmitted = totalMembers > 0 && submittedUserIds.size === totalMembers
 
-  return { submittedUserIds, totalMembers, allSubmitted, refresh }
+  return { submittedUserIds, totalMembers, allSubmitted, isPublished, refresh }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { getGroupPlacements, getUserPlacements } from '@/lib/api/placements'
+import { getGroupPlacements, getUserPlacements, publishResults } from '@/lib/api/placements'
 import { useRealtimeSubmissions } from '@/hooks/useRealtimeSubmissions'
 import { useGroupMembers } from '@/hooks/useGroupMembers'
 import { ResultsChart } from '@/components/scatter/ResultsChart'
@@ -20,14 +20,26 @@ interface ResultsClientProps {
 
 export function ResultsClient({ groupId, prompt, currentUserId, isHost }: ResultsClientProps) {
   const { members } = useGroupMembers(groupId)
-  const { submittedUserIds, totalMembers, allSubmitted } = useRealtimeSubmissions(groupId, prompt.id)
+  const { submittedUserIds, totalMembers, allSubmitted, isPublished } = useRealtimeSubmissions(groupId, prompt.id)
   const [averaged, setAveraged] = useState<AveragedPosition[]>([])
   const [myPlacements, setMyPlacements] = useState<PlacementPosition[]>([])
   const [showVectors, setShowVectors] = useState(false)
   const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null)
   const [overrideView, setOverrideView] = useState(false)
+  const [publishing, setPublishing] = useState(false)
 
-  const showResults = allSubmitted || overrideView
+  const showResults = allSubmitted || overrideView || isPublished
+
+  const handlePublish = async () => {
+    setPublishing(true)
+    try {
+      const supabase = createClient()
+      await publishResults(supabase, groupId, prompt.id, currentUserId)
+    } catch {
+      // realtime/refresh will just leave it unpublished if this failed
+    }
+    setPublishing(false)
+  }
 
   useEffect(() => {
     if (!showResults) return
@@ -59,37 +71,47 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
           </div>
-          <div className="flex justify-center gap-4 mt-5">
-            {submittedUserIds.has(currentUserId) && (
-              <Link
-                href={`/play/${groupId}?edit=1`}
-                className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
-              >
-                Edit my answers
-              </Link>
-            )}
-            {isHost && (
+          {isHost && (
+            <div className="flex justify-center gap-4 mt-5">
               <button
                 onClick={() => setOverrideView(true)}
                 className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
               >
                 View results anyway
               </button>
-            )}
-          </div>
+              <button
+                onClick={handlePublish}
+                disabled={publishing}
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors"
+              >
+                {publishing ? 'Publishing...' : 'Publish results to everyone'}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
-          {members.map(m => (
-            <div key={m.id} className="flex items-center justify-between p-3 card rounded-xl">
-              <span className="text-sm text-gray-700">{m.display_name}</span>
-              {submittedUserIds.has(m.id) ? (
-                <span className="text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-500 border border-green-200">Done</span>
-              ) : (
-                <span className="text-xs px-2.5 py-1 rounded-full bg-gray-50 text-gray-300 border border-gray-200">Waiting</span>
-              )}
-            </div>
-          ))}
+          {members.map(m => {
+            const isMe = m.id === currentUserId
+            const hasSubmitted = submittedUserIds.has(m.id)
+            return (
+              <div key={m.id} className="flex items-center justify-between p-3 card rounded-xl">
+                <span className="text-sm text-gray-700">{m.display_name}</span>
+                {hasSubmitted && isMe ? (
+                  <Link
+                    href={`/play/${groupId}?edit=1`}
+                    className="text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-500 border border-green-200 hover:bg-green-100 transition-colors"
+                  >
+                    Submitted (edit)
+                  </Link>
+                ) : hasSubmitted ? (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-500 border border-green-200">Submitted</span>
+                ) : (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-gray-50 text-gray-300 border border-gray-200">Waiting</span>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
     )
@@ -97,9 +119,14 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
 
   return (
     <div className="space-y-4">
-      {!allSubmitted && (
+      {!allSubmitted && isPublished && (
+        <p className="text-center text-xs font-bold text-rose-500 bg-rose-50 border border-rose-200 rounded-full px-3 py-1 inline-block mx-auto">
+          Published early by host — {submittedUserIds.size} of {totalMembers} submitted
+        </p>
+      )}
+      {!allSubmitted && !isPublished && (
         <p className="text-center text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 inline-block mx-auto">
-          Partial results — {submittedUserIds.size} of {totalMembers} submitted
+          Partial results (only visible to you) — {submittedUserIds.size} of {totalMembers} submitted
         </p>
       )}
       <div className="flex items-center justify-center gap-4">

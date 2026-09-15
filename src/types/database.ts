@@ -174,6 +174,44 @@ export type Database = {
           }
         ]
       }
+      result_publications: {
+        Row: {
+          group_id: string
+          prompt_id: string
+          published_by: string
+          published_at: string
+        }
+        Insert: {
+          group_id: string
+          prompt_id: string
+          published_by: string
+          published_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: [
+          {
+            foreignKeyName: "result_publications_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "result_publications_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "result_publications_published_by_fkey"
+            columns: ["published_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       group_submissions: {

@@ -69,3 +69,33 @@ export async function getSubmissionStatus(
   if (error) throw error
   return data
 }
+
+export async function publishResults(
+  supabase: Client,
+  groupId: string,
+  promptId: string,
+  userId: string
+) {
+  const { error } = await supabase
+    .from('result_publications')
+    .upsert(
+      { group_id: groupId, prompt_id: promptId, published_by: userId },
+      { onConflict: 'group_id,prompt_id' }
+    )
+  if (error) throw error
+}
+
+export async function getPublicationStatus(
+  supabase: Client,
+  groupId: string,
+  promptId: string
+) {
+  const { data, error } = await supabase
+    .from('result_publications')
+    .select('group_id')
+    .eq('group_id', groupId)
+    .eq('prompt_id', promptId)
+    .maybeSingle()
+  if (error) throw error
+  return data !== null
+}
