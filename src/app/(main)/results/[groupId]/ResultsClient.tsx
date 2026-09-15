@@ -31,6 +31,7 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
   const [publishing, setPublishing] = useState(false)
   const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardRow[]>([])
   const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardRow[]>([])
+  const [leaderboardScope, setLeaderboardScope] = useState<'today' | 'allTime'>('today')
 
   const showResults = allSubmitted || overrideView || isPublished
 
@@ -176,8 +177,35 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
       {prompt.award_labels && (
         <AwardsPanel positions={averaged} awardLabels={prompt.award_labels} />
       )}
-      <LeaderboardList title="Today's Accuracy Leaderboard" rows={todayLeaderboard} currentUserId={currentUserId} />
-      <LeaderboardList title="All-Time Accuracy Leaderboard" rows={allTimeLeaderboard} currentUserId={currentUserId} />
+      <div className="space-y-2">
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => setLeaderboardScope('today')}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+              leaderboardScope === 'today'
+                ? 'bg-violet-500 text-white'
+                : 'bg-white text-gray-400 border-2 border-gray-200 hover:border-violet-200'
+            }`}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setLeaderboardScope('allTime')}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+              leaderboardScope === 'allTime'
+                ? 'bg-violet-500 text-white'
+                : 'bg-white text-gray-400 border-2 border-gray-200 hover:border-violet-200'
+            }`}
+          >
+            All-Time
+          </button>
+        </div>
+        <LeaderboardList
+          title={leaderboardScope === 'today' ? "Today's Accuracy Leaderboard" : 'All-Time Accuracy Leaderboard'}
+          rows={leaderboardScope === 'today' ? todayLeaderboard : allTimeLeaderboard}
+          currentUserId={currentUserId}
+        />
+      </div>
     </div>
   )
 }

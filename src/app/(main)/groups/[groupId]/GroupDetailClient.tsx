@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { removeMember, transferHost, leaveGroup, deleteGroup, uploadGroupIcon, toggleGameplay } from '@/lib/api/groups'
+import { getGroupLeaderboard } from '@/lib/api/placements'
 import { ImageCropper } from '@/components/ui/ImageCropper'
-import type { GroupWithMembers } from '@/types/app'
+import type { GroupWithMembers, LeaderboardRow } from '@/types/app'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -28,9 +29,27 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
   const [iconUrl, setIconUrl] = useState(group.icon_url)
   const [iconCropSrc, setIconCropSrc] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([])
   const router = useRouter()
 
   const isHost = group.created_by === currentUserId
+
+  useEffect(() => {
+    const supabase = createClient()
+    getGroupLeaderboard(supabase, group.id)
+      .then(setLeaderboard)
+      .catch(() => {})
+  }, [group.id])
+
+  const accuracyByUserId = new Map(leaderboard.map(row => [row.user_id, row.avg_match]))
+  const sortedMembers = [...group.members].sort((a, b) => {
+    const accA = accuracyByUserId.get(a.id)
+    const accB = accuracyByUserId.get(b.id)
+    if (accA === undefined && accB === undefined) return 0
+    if (accA === undefined) return 1
+    if (accB === undefined) return -1
+    return accB - accA
+  })
 
   const copyInviteCode = () => {
     navigator.clipboard.writeText(group.invite_code)
@@ -191,9 +210,10 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
           Members ({group.members.length}/{group.min_members} min)
         </h2>
         <div className="space-y-2">
-          {group.members.map((member, i) => {
+          {sortedMembers.map((member, i) => {
             const isSelf = member.id === currentUserId
             const isMemberHost = member.id === group.created_by
+            const accuracy = accuracyByUserId.get(member.id)
 
             return (
               <div key={member.id} className="flex items-center justify-between p-3 card">
@@ -213,6 +233,11 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
                     {isMemberHost && (
                       <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-500 border border-amber-200">
                         Host
+                      </span>
+                    )}
+                    {accuracy !== undefined && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-50 text-violet-500 border border-violet-200">
+                        {accuracy}% accurate
                       </span>
                     )}
                   </div>
