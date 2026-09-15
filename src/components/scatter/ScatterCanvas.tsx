@@ -11,6 +11,7 @@ import {
 } from '@dnd-kit/core'
 import { DraggableAvatar } from './DraggableAvatar'
 import type { Profile, PlacementPosition } from '@/types/app'
+import type { AxisEndpointLabels } from '@/types/database'
 
 // Chart layout: 4-quadrant with cross axes through center
 const SIZE = 460
@@ -27,6 +28,7 @@ const PLOT_H = BOTTOM - TOP
 interface ScatterCanvasProps {
   xLabel: string
   yLabel: string
+  axisLabels?: AxisEndpointLabels | null
   members: Profile[]
   currentUserId: string
   onSubmit: (positions: PlacementPosition[]) => void
@@ -46,6 +48,7 @@ const AVATAR_COLORS = [
 export function ScatterCanvas({
   xLabel,
   yLabel,
+  axisLabels,
   members,
   currentUserId,
   onSubmit,
@@ -156,13 +159,13 @@ export function ScatterCanvas({
 
             {/* X axis label + endpoints */}
             <text x={CENTER_X} y={SIZE - 8} textAnchor="middle" fill="#8b5cf6" fontSize="11" fontWeight="600">{xLabel}?</text>
-            <text x={LEFT} y={CENTER_Y + 18} textAnchor="start" fill="#8b5cf6" fontSize="9">Low</text>
-            <text x={RIGHT} y={CENTER_Y + 18} textAnchor="end" fill="#8b5cf6" fontSize="9">High</text>
+            <text x={LEFT} y={CENTER_Y + 18} textAnchor="start" fill="#8b5cf6" fontSize="9">{axisLabels?.x_low ?? 'Low'}</text>
+            <text x={RIGHT} y={CENTER_Y + 18} textAnchor="end" fill="#8b5cf6" fontSize="9">{axisLabels?.x_high ?? 'High'}</text>
 
             {/* Y axis label + endpoints */}
             <text x={14} y={CENTER_Y} textAnchor="middle" fill="#f43f5e" fontSize="11" fontWeight="600" transform={`rotate(-90, 14, ${CENTER_Y})`}>{yLabel}?</text>
-            <text x={CENTER_X} y={BOTTOM + 16} textAnchor="middle" fill="#f43f5e" fontSize="9">Low</text>
-            <text x={CENTER_X} y={TOP - 6} textAnchor="middle" fill="#f43f5e" fontSize="9">High</text>
+            <text x={CENTER_X} y={BOTTOM + 16} textAnchor="middle" fill="#f43f5e" fontSize="9">{axisLabels?.y_low ?? 'Low'}</text>
+            <text x={CENTER_X} y={TOP - 6} textAnchor="middle" fill="#f43f5e" fontSize="9">{axisLabels?.y_high ?? 'High'}</text>
 
             {/* Drop zone */}
             <rect x={LEFT} y={TOP} width={PLOT_W} height={PLOT_H} fill="transparent" />

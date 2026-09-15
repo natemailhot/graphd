@@ -190,6 +190,7 @@ export function ResultsClient({ groupId, groupName, prompt, currentUserId, isHos
       <ResultsChart
         xLabel={prompt.x_axis_label}
         yLabel={prompt.y_axis_label}
+        axisLabels={prompt.axis_labels}
         positions={averaged}
         currentUserId={currentUserId}
         myPlacements={showVectors ? myPlacements : undefined}

@@ -58,6 +58,7 @@ export function PlayClient({ groupId, prompt, members, currentUserId, existingPo
       <ScatterCanvas
         xLabel={prompt.x_axis_label}
         yLabel={prompt.y_axis_label}
+        axisLabels={prompt.axis_labels}
         members={membersForCanvas}
         currentUserId={currentUserId}
         onSubmit={handleSubmit}

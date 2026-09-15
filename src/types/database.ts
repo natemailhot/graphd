@@ -7,6 +7,13 @@ export type AwardLabels = {
   bottom_left: string
 }
 
+export type AxisEndpointLabels = {
+  x_low: string
+  x_high: string
+  y_low: string
+  y_high: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -109,6 +116,7 @@ export type Database = {
           source: string
           created_at: string
           award_labels: AwardLabels | null
+          axis_labels: AxisEndpointLabels | null
         }
         Insert: {
           id?: string
@@ -118,6 +126,7 @@ export type Database = {
           source?: string
           created_at?: string
           award_labels?: AwardLabels | null
+          axis_labels?: AxisEndpointLabels | null
         }
         Update: {
           x_axis_label?: string
@@ -125,6 +134,7 @@ export type Database = {
           prompt_date?: string | null
           source?: string
           award_labels?: AwardLabels | null
+          axis_labels?: AxisEndpointLabels | null
         }
         Relationships: []
       }
