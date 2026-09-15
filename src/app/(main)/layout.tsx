@@ -31,6 +31,7 @@ export default async function MainLayout({
             <Link href="/home" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">Home</Link>
             <Link href="/groups" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">Groups</Link>
             <Link href="/history" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">History</Link>
+            <Link href="/how-it-works" className="text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">How It Works</Link>
             <Link href="/profile" className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-violet-500 transition-colors">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover border-2 border-gray-200" />

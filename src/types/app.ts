@@ -43,3 +43,4 @@ export interface GroupPlayState {
 }
 
 export type LeaderboardRow = Database['public']['Functions']['group_accuracy_leaderboard']['Returns'][number]
+export type UserAccuracySummary = Database['public']['Functions']['user_accuracy_summary']['Returns'][number]

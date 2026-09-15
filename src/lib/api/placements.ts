@@ -112,3 +112,9 @@ export async function getGroupLeaderboard(
   if (error) throw error
   return data
 }
+
+export async function getUserAccuracySummary(supabase: Client) {
+  const { data, error } = await supabase.rpc('user_accuracy_summary')
+  if (error) throw error
+  return data?.[0] ?? null
+}

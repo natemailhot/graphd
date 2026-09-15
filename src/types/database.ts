@@ -249,6 +249,17 @@ export type Database = {
           placements_count: number
         }[]
       }
+      user_accuracy_summary: {
+        Args: Record<string, never>
+        Returns: {
+          overall_avg_match: number | null
+          total_placements: number
+          most_accurate_name: string | null
+          most_accurate_match: number | null
+          least_accurate_name: string | null
+          least_accurate_match: number | null
+        }[]
+      }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

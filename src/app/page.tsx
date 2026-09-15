@@ -90,6 +90,10 @@ export default async function LandingPage() {
             Sign In
           </Link>
         </div>
+
+        <Link href="/how-it-works" className="inline-block mt-5 text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
+          How does it work?
+        </Link>
       </div>
     </div>
   )
