@@ -6,6 +6,7 @@ import { getGroupPlacements, getUserPlacements } from '@/lib/api/placements'
 import { useRealtimeSubmissions } from '@/hooks/useRealtimeSubmissions'
 import { useGroupMembers } from '@/hooks/useGroupMembers'
 import { ResultsChart } from '@/components/scatter/ResultsChart'
+import { AccuracyPercentList } from '@/components/scatter/AccuracyPercentList'
 import { computeAveragedPositions } from '@/lib/utils/averaging'
 import type { Prompt, AveragedPosition, PlacementPosition } from '@/types/app'
 
@@ -22,6 +23,7 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
   const [averaged, setAveraged] = useState<AveragedPosition[]>([])
   const [myPlacements, setMyPlacements] = useState<PlacementPosition[]>([])
   const [showVectors, setShowVectors] = useState(false)
+  const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null)
   const [overrideView, setOverrideView] = useState(false)
 
   const showResults = allSubmitted || overrideView
@@ -95,7 +97,10 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
         </span>
         {myPlacements.length > 0 && (
           <button
-            onClick={() => setShowVectors(!showVectors)}
+            onClick={() => {
+              setShowVectors(!showVectors)
+              setHighlightedUserId(null)
+            }}
             className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wide transition-all ${
               showVectors
                 ? 'bg-rose-50 text-rose-500 border-2 border-rose-200'
@@ -112,7 +117,16 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
         positions={averaged}
         currentUserId={currentUserId}
         myPlacements={showVectors ? myPlacements : undefined}
+        highlightUserId={showVectors ? highlightedUserId : null}
       />
+      {showVectors && (
+        <AccuracyPercentList
+          positions={averaged}
+          myPlacements={myPlacements}
+          selectedUserId={highlightedUserId}
+          onSelect={id => setHighlightedUserId(h => h === id ? null : id)}
+        />
+      )}
     </div>
   )
 }
