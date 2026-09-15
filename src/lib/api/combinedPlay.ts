@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import type { Profile, PlacementPosition, Prompt } from '@/types/app'
 import { getTodayPrompt } from '@/lib/api/prompts'
+import { getSubmissionStatus, getPublicationStatus } from '@/lib/api/placements'
 
 type Client = SupabaseClient<Database>
 
@@ -10,6 +11,9 @@ export interface CombinedPlayState {
   totalTargets: number
   ratedCount: number
   remaining: Profile[]
+  allTargets: Profile[]
+  existingPositions: PlacementPosition[]
+  readyGroupIds: string[]
   /** target_user_id -> group_ids they're co-members of with the current user, among "ready" groups */
   groupsByTarget: Map<string, string[]>
 }
@@ -23,7 +27,16 @@ export interface CombinedPlayState {
  */
 export async function getCombinedPlayState(supabase: Client, userId: string): Promise<CombinedPlayState> {
   const prompt = await getTodayPrompt(supabase).catch(() => null)
-  const empty: CombinedPlayState = { prompt, totalTargets: 0, ratedCount: 0, remaining: [], groupsByTarget: new Map() }
+  const empty: CombinedPlayState = {
+    prompt,
+    totalTargets: 0,
+    ratedCount: 0,
+    remaining: [],
+    allTargets: [],
+    existingPositions: [],
+    readyGroupIds: [],
+    groupsByTarget: new Map(),
+  }
   if (!prompt) return empty
 
   const { data: myMemberships, error: membershipError } = await supabase
@@ -86,17 +99,43 @@ export async function getCombinedPlayState(supabase: Client, userId: string): Pr
     if (backfillError) throw backfillError
   }
 
-  const remaining = Array.from(groupsByTarget.keys())
+  const allTargetIds = Array.from(groupsByTarget.keys())
+  const remaining = allTargetIds
     .filter(id => !ratedValue.has(id))
     .map(id => profileByTarget.get(id)!)
+  const allTargets = allTargetIds.map(id => profileByTarget.get(id)!)
+  const existingPositions: PlacementPosition[] = Array.from(ratedValue.entries()).map(([targetUserId, { x, y }]) => ({
+    targetUserId,
+    x,
+    y,
+  }))
 
   return {
     prompt,
     totalTargets: groupsByTarget.size,
     ratedCount: ratedValue.size,
     remaining,
+    allTargets,
+    existingPositions,
+    readyGroupIds,
     groupsByTarget: new Map(Array.from(groupsByTarget.entries()).map(([k, v]) => [k, Array.from(v)])),
   }
+}
+
+/** Group ids where today's results are already visible (fully submitted or published early). */
+export async function getRevealedGroupIds(supabase: Client, groupIds: string[], promptId: string): Promise<Set<string>> {
+  const revealed = new Set<string>()
+  await Promise.all(
+    groupIds.map(async groupId => {
+      const [statuses, published] = await Promise.all([
+        getSubmissionStatus(supabase, groupId, promptId),
+        getPublicationStatus(supabase, groupId, promptId),
+      ])
+      const allSubmitted = statuses.length > 0 && statuses.every(s => s.has_submitted)
+      if (allSubmitted || published) revealed.add(groupId)
+    })
+  )
+  return revealed
 }
 
 export async function submitCombinedPlacements(

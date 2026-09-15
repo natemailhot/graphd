@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { getCombinedPlayState, submitCombinedPlacements } from '@/lib/api/combinedPlay'
+import { getCombinedPlayState, submitCombinedPlacements, getRevealedGroupIds } from '@/lib/api/combinedPlay'
 import { ScatterCanvas } from '@/components/scatter/ScatterCanvas'
 import type { CombinedPlayState } from '@/lib/api/combinedPlay'
-import type { PlacementPosition } from '@/types/app'
+import type { PlacementPosition, Profile } from '@/types/app'
 
-export function UnifiedPlayClient({ currentUserId }: { currentUserId: string }) {
+export function UnifiedPlayClient({ currentUserId, editMode = false }: { currentUserId: string; editMode?: boolean }) {
   const [state, setState] = useState<CombinedPlayState | null>(null)
+  const [revealedGroupIds, setRevealedGroupIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
@@ -18,9 +19,15 @@ export function UnifiedPlayClient({ currentUserId }: { currentUserId: string }) 
   useEffect(() => {
     const supabase = createClient()
     getCombinedPlayState(supabase, currentUserId)
-      .then(setState)
+      .then(async s => {
+        setState(s)
+        if (editMode && s.prompt && s.readyGroupIds.length > 0) {
+          const revealed = await getRevealedGroupIds(supabase, s.readyGroupIds, s.prompt.id).catch(() => new Set<string>())
+          setRevealedGroupIds(revealed)
+        }
+      })
       .finally(() => setLoading(false))
-  }, [currentUserId])
+  }, [currentUserId, editMode])
 
   const handleSubmit = async (positions: PlacementPosition[]) => {
     if (!state?.prompt) return
@@ -63,6 +70,67 @@ export function UnifiedPlayClient({ currentUserId }: { currentUserId: string }) 
     )
   }
 
+  if (editMode) {
+    const isLocked = (target: Profile) =>
+      (state.groupsByTarget.get(target.id) ?? []).some(gid => revealedGroupIds.has(gid))
+    const editableTargets = state.allTargets.filter(t => !isLocked(t))
+    const lockedCount = state.allTargets.length - editableTargets.length
+    const positionsById = new Map(state.existingPositions.map(p => [p.targetUserId, p]))
+    const editableInitialPositions = editableTargets
+      .map(t => positionsById.get(t.id))
+      .filter((p): p is PlacementPosition => !!p)
+
+    if (state.allTargets.length === 0) {
+      return (
+        <div className="card rounded-2xl p-8 text-center space-y-2">
+          <h2 className="text-xl font-bold text-gray-800">Nothing to edit yet</h2>
+          <p className="text-gray-400">Place some friends first, then come back to adjust them.</p>
+          <Link href="/play" className="inline-block mt-2 text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
+            Go place your friends
+          </Link>
+        </div>
+      )
+    }
+
+    if (editableTargets.length === 0) {
+      return (
+        <div className="card rounded-2xl p-8 text-center space-y-2">
+          <h2 className="text-xl font-bold text-gray-800">Nothing left to edit</h2>
+          <p className="text-gray-400">Results are already out in every group you&apos;d be adjusting — those answers are locked in.</p>
+          <Link href="/home" className="inline-block mt-2 text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
+            Back to Home
+          </Link>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="text-center">
+          <h1 className="text-lg font-bold text-gray-800">Edit your answers</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Drag anyone to update your answer, then resubmit — it updates every group they&apos;re shared in.
+          </p>
+          {lockedCount > 0 && (
+            <p className="text-xs font-bold text-amber-500 mt-2">
+              {lockedCount} {lockedCount === 1 ? 'person is' : 'people are'} locked — results already revealed in a shared group.
+            </p>
+          )}
+        </div>
+        <ScatterCanvas
+          xLabel={state.prompt.x_axis_label}
+          yLabel={state.prompt.y_axis_label}
+          axisLabels={state.prompt.axis_labels}
+          members={editableTargets}
+          currentUserId={currentUserId}
+          onSubmit={handleSubmit}
+          initialPositions={editableInitialPositions}
+          submitting={submitting}
+        />
+      </div>
+    )
+  }
+
   if (state.remaining.length === 0) {
     return (
       <div className="card rounded-2xl p-8 text-center space-y-2">
@@ -71,8 +139,8 @@ export function UnifiedPlayClient({ currentUserId }: { currentUserId: string }) 
         <p className="text-gray-400">
           {state.ratedCount}/{state.totalTargets} graphed — you&apos;ve placed everyone across all your groups.
         </p>
-        <Link href="/home" className="inline-block mt-2 text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
-          Back to Home
+        <Link href="/play?edit=1" className="inline-block mt-2 text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
+          Edit your answers
         </Link>
       </div>
     )
