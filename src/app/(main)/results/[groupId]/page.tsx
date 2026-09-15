@@ -18,5 +18,12 @@ export default async function ResultsPage({
     return <p className="text-center text-slate-500 py-12">No prompt today.</p>
   }
 
-  return <ResultsClient groupId={groupId} prompt={prompt} currentUserId={user.id} />
+  const { data: group } = await supabase
+    .from('groups')
+    .select('created_by')
+    .eq('id', groupId)
+    .single()
+  const isHost = group?.created_by === user.id
+
+  return <ResultsClient groupId={groupId} prompt={prompt} currentUserId={user.id} isHost={isHost} />
 }

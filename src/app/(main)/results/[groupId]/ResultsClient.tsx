@@ -13,17 +13,21 @@ interface ResultsClientProps {
   groupId: string
   prompt: Prompt
   currentUserId: string
+  isHost: boolean
 }
 
-export function ResultsClient({ groupId, prompt, currentUserId }: ResultsClientProps) {
+export function ResultsClient({ groupId, prompt, currentUserId, isHost }: ResultsClientProps) {
   const { members } = useGroupMembers(groupId)
   const { submittedUserIds, totalMembers, allSubmitted } = useRealtimeSubmissions(groupId, prompt.id)
   const [averaged, setAveraged] = useState<AveragedPosition[]>([])
   const [myPlacements, setMyPlacements] = useState<PlacementPosition[]>([])
   const [showVectors, setShowVectors] = useState(false)
+  const [overrideView, setOverrideView] = useState(false)
+
+  const showResults = allSubmitted || overrideView
 
   useEffect(() => {
-    if (!allSubmitted) return
+    if (!showResults) return
     const supabase = createClient()
 
     Promise.all([
@@ -37,9 +41,9 @@ export function ResultsClient({ groupId, prompt, currentUserId }: ResultsClientP
         y: p.y_value,
       })))
     })
-  }, [allSubmitted, groupId, prompt.id, members, currentUserId])
+  }, [showResults, groupId, prompt.id, members, currentUserId])
 
-  if (!allSubmitted) {
+  if (!showResults) {
     return (
       <div className="space-y-6">
         <div className="card rounded-2xl p-8 text-center">
@@ -52,6 +56,14 @@ export function ResultsClient({ groupId, prompt, currentUserId }: ResultsClientP
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
           </div>
+          {isHost && (
+            <button
+              onClick={() => setOverrideView(true)}
+              className="mt-5 text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
+            >
+              View results anyway
+            </button>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -72,6 +84,11 @@ export function ResultsClient({ groupId, prompt, currentUserId }: ResultsClientP
 
   return (
     <div className="space-y-4">
+      {!allSubmitted && (
+        <p className="text-center text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 inline-block mx-auto">
+          Partial results — {submittedUserIds.size} of {totalMembers} submitted
+        </p>
+      )}
       <div className="flex items-center justify-center gap-4">
         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-green-50 text-green-500 border-2 border-green-200">
           Results
