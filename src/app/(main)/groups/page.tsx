@@ -16,11 +16,12 @@ export default async function GroupsPage() {
 
   const groupStatuses = await Promise.all(
     groups.map(async (group) => {
-      if (!prompt) return { groupId: group.id, userSubmitted: false, allSubmitted: false }
+      if (!prompt) return { groupId: group.id, userSubmitted: false, allSubmitted: false, submittedCount: 0, totalMembers: 0 }
       const statuses = await getSubmissionStatus(supabase, group.id, prompt.id).catch(() => [])
       const userSubmitted = statuses.some(s => s.user_id === user.id && s.has_submitted)
       const allSubmitted = statuses.length > 0 && statuses.every(s => s.has_submitted)
-      return { groupId: group.id, userSubmitted, allSubmitted }
+      const submittedCount = statuses.filter(s => s.has_submitted).length
+      return { groupId: group.id, userSubmitted, allSubmitted, submittedCount, totalMembers: statuses.length }
     })
   )
   const statusMap = new Map(groupStatuses.map(s => [s.groupId, s]))
@@ -56,7 +57,14 @@ export default async function GroupsPage() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-gray-800 truncate">{group.name}</h3>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="font-bold text-gray-800 truncate">{group.name}</h3>
+                        {prompt && (status?.totalMembers ?? 0) > 0 && (
+                          <span className="text-xs font-bold text-violet-400 shrink-0">
+                            {status?.submittedCount}/{status?.totalMembers}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-400 mt-1 font-mono">{group.invite_code}</p>
                     </div>
                   </div>

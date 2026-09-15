@@ -18,11 +18,12 @@ export default async function HomePage() {
   // Fetch submission status for each group
   const groupStatuses = await Promise.all(
     groups.map(async (group) => {
-      if (!prompt) return { groupId: group.id, userSubmitted: false, allSubmitted: false }
+      if (!prompt) return { groupId: group.id, userSubmitted: false, allSubmitted: false, submittedCount: 0, totalMembers: 0 }
       const statuses = await getSubmissionStatus(supabase, group.id, prompt.id).catch(() => [])
       const userSubmitted = statuses.some(s => s.user_id === user.id && s.has_submitted)
       const allSubmitted = statuses.length > 0 && statuses.every(s => s.has_submitted)
-      return { groupId: group.id, userSubmitted, allSubmitted }
+      const submittedCount = statuses.filter(s => s.has_submitted).length
+      return { groupId: group.id, userSubmitted, allSubmitted, submittedCount, totalMembers: statuses.length }
     })
   )
   const statusMap = new Map(groupStatuses.map(s => [s.groupId, s]))
@@ -61,6 +62,8 @@ export default async function HomePage() {
                 promptId={prompt?.id}
                 userSubmitted={statusMap.get(group.id)?.userSubmitted ?? false}
                 allSubmitted={statusMap.get(group.id)?.allSubmitted ?? false}
+                submittedCount={statusMap.get(group.id)?.submittedCount ?? 0}
+                totalMembers={statusMap.get(group.id)?.totalMembers ?? 0}
               />
             ))}
           </div>

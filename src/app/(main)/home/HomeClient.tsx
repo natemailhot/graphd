@@ -8,9 +8,11 @@ interface HomeClientProps {
   promptId?: string
   userSubmitted: boolean
   allSubmitted: boolean
+  submittedCount: number
+  totalMembers: number
 }
 
-export function HomeClient({ group, promptId, userSubmitted, allSubmitted }: HomeClientProps) {
+export function HomeClient({ group, promptId, userSubmitted, allSubmitted, submittedCount, totalMembers }: HomeClientProps) {
   return (
     <div className="card card-hover p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all">
       <div className="flex items-center gap-3 min-w-0">
@@ -22,7 +24,14 @@ export function HomeClient({ group, promptId, userSubmitted, allSubmitted }: Hom
           )}
         </div>
         <div className="min-w-0">
-          <h3 className="font-bold text-gray-800 truncate">{group.name}</h3>
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="font-bold text-gray-800 truncate">{group.name}</h3>
+            {promptId && totalMembers > 0 && (
+              <span className="text-xs font-bold text-violet-400 shrink-0">
+                {submittedCount}/{totalMembers}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-300 font-mono mt-0.5">{group.invite_code}</p>
         </div>
       </div>
