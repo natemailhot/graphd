@@ -64,18 +64,25 @@ export default async function GroupsPage() {
                     {prompt && (
                       <>
                         {status?.userSubmitted ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-green-50 text-green-500 border-2 border-green-200">
+                          <Link
+                            href={status?.allSubmitted ? `/results/${group.id}` : `/play/${group.id}?edit=1`}
+                            className="inline-flex items-center justify-center gap-1.5 min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold bg-green-50 text-green-500 border-2 border-green-200 hover:bg-green-100 transition-colors"
+                          >
                             <span className="w-2 h-2 rounded-full bg-green-400" />
-                            Submitted
-                          </span>
+                            {status?.allSubmitted ? 'Submitted' : 'Submitted (edit)'}
+                          </Link>
                         ) : (
                           <Link href={`/play/${group.id}`} className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-white bg-[#f43f5e] border-2 border-[#e11d48]">Play</Link>
                         )}
                         <Link
                           href={`/results/${group.id}`}
-                          className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-[#6d28d9] bg-white border-2 border-[#ddd6fe]"
+                          className={
+                            status?.allSubmitted
+                              ? 'inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-white bg-[#8b5cf6] border-2 border-[#7c3aed] shadow-[0_3px_0_#6d28d9] hover:brightness-105 transition-all'
+                              : 'inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-[#6d28d9] bg-white border-2 border-[#ddd6fe]'
+                          }
                         >
-                          {status?.allSubmitted ? 'View Results' : 'Waiting...'}
+                          {status?.allSubmitted ? '🎉 View Results' : 'Waiting...'}
                         </Link>
                       </>
                     )}

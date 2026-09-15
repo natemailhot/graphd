@@ -311,9 +311,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       {canPlay && gameplayEnabled && (
         <div className="space-y-3">
           {userSubmitted ? (
-            <Link href={`/play/${group.id}?edit=1`} className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-green-50 border-2 border-green-200 text-green-500 font-bold text-lg hover:bg-green-100 transition-colors">
+            <Link
+              href={allSubmitted ? `/results/${group.id}` : `/play/${group.id}?edit=1`}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-green-50 border-2 border-green-200 text-green-500 font-bold text-lg hover:bg-green-100 transition-colors"
+            >
               <span className="w-3 h-3 rounded-full bg-green-400" />
-              Submitted (edit)
+              {allSubmitted ? 'Submitted' : 'Submitted (edit)'}
             </Link>
           ) : (
             <Link href={`/play/${group.id}`} className="block w-full btn-primary py-3 text-center text-lg">
@@ -322,9 +325,13 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
           )}
           <Link
             href={`/results/${group.id}`}
-            className="block w-full btn-secondary py-3 text-center text-lg"
+            className={
+              allSubmitted
+                ? 'flex items-center justify-center gap-2 w-full py-3 rounded-full text-center text-lg font-bold text-white bg-[#8b5cf6] border-2 border-[#7c3aed] shadow-[0_4px_0_#6d28d9] hover:brightness-105 transition-all'
+                : 'block w-full btn-secondary py-3 text-center text-lg'
+            }
           >
-            {allSubmitted ? 'View Results' : 'Waiting for Other Players...'}
+            {allSubmitted ? '🎉 View Results' : 'Waiting for Other Players...'}
           </Link>
         </div>
       )}
