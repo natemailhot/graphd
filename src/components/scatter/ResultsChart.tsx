@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { AveragedPosition, PlacementPosition } from '@/types/app'
 import { resolveOverlaps } from '@/lib/utils/declutter'
 import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
@@ -46,6 +47,8 @@ export function ResultsChart({
   highlightUserId,
   showLegend = true,
 }: ResultsChartProps) {
+  const [hoverUserId, setHoverUserId] = useState<string | null>(null)
+
   const toSvgX = (n: number) => LEFT + n * PLOT_W
   const toSvgY = (n: number) => BOTTOM - n * PLOT_H
 
@@ -65,9 +68,14 @@ export function ResultsChart({
   )
   const resolvedMap = new Map(resolved.map(r => [r.id, r]))
 
-  const highlighted = highlightUserId ? positions.find(p => p.targetUserId === highlightUserId) : null
+  // Hovering a dot always shows a name label; it also drives the accuracy
+  // vector (like clicking that person in the accuracy list) whenever
+  // nothing else is already hovered/selected.
+  const effectiveHighlightId = hoverUserId ?? highlightUserId
+  const highlighted = effectiveHighlightId ? positions.find(p => p.targetUserId === effectiveHighlightId) : null
   const highlightedMine = highlighted ? myMap.get(highlighted.targetUserId) : null
   const highlightedDot = highlighted ? resolvedMap.get(highlighted.targetUserId) : null
+  const hoveredDot = hoverUserId ? resolvedMap.get(hoverUserId) : null
 
   return (
     <div className="card rounded-2xl p-4">
@@ -161,14 +169,19 @@ export function ResultsChart({
         {positions.map((pos, i) => {
           const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
           const isMe = pos.targetUserId === currentUserId
-          const isHighlighted = pos.targetUserId === highlightUserId
+          const isHighlighted = pos.targetUserId === effectiveHighlightId
           const avatarEmoji = getAvatarEmoji(pos.profile.id)
           const dot = resolvedMap.get(pos.targetUserId)!
           const cx = dot.x
           const cy = dot.y
 
           return (
-            <g key={pos.targetUserId}>
+            <g
+              key={pos.targetUserId}
+              onMouseEnter={() => setHoverUserId(pos.targetUserId)}
+              onMouseLeave={() => setHoverUserId(null)}
+              style={{ cursor: 'pointer' }}
+            >
               <defs>
                 <clipPath id={`result-clip-${pos.targetUserId}`}>
                   <circle cx={cx} cy={cy} r={DOT_RADIUS} />
@@ -195,13 +208,46 @@ export function ResultsChart({
                   pointerEvents="none"
                 />
               ) : (
-                <text x={cx} y={cy} textAnchor="middle" dy="3.5" fontSize="14">
+                <text x={cx} y={cy} textAnchor="middle" dy="3.5" fontSize="14" pointerEvents="none">
                   {avatarEmoji}
                 </text>
               )}
             </g>
           )
         })}
+
+        {/* Floating name label for the hovered dot */}
+        {hoverUserId && hoveredDot && (() => {
+          const pos = positions.find(p => p.targetUserId === hoverUserId)
+          if (!pos) return null
+          const name = pos.profile.display_name
+          const labelWidth = Math.min(180, Math.max(40, name.length * 6.5 + 16))
+          const above = hoveredDot.y - DOT_RADIUS - 20 > TOP - 10
+          const labelY = above ? hoveredDot.y - DOT_RADIUS - 20 : hoveredDot.y + DOT_RADIUS + 8
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={hoveredDot.x - labelWidth / 2}
+                y={labelY}
+                width={labelWidth}
+                height={20}
+                rx={10}
+                fill="#1e1b2e"
+                opacity={0.9}
+              />
+              <text
+                x={hoveredDot.x}
+                y={labelY + 14}
+                textAnchor="middle"
+                fill="white"
+                fontSize="10"
+                fontWeight="700"
+              >
+                {name}
+              </text>
+            </g>
+          )
+        })()}
       </svg>
 
       {showLegend && (
