@@ -320,7 +320,7 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
               {allSubmitted ? 'Submitted' : 'Submitted (edit)'}
             </Link>
           ) : (
-            <Link href={`/play/${group.id}`} className="block w-full btn-primary py-3 text-center text-lg">
+            <Link href="/play" className="block w-full btn-primary py-3 text-center text-lg">
               Play Today&apos;s Prompt
             </Link>
           )}

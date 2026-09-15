@@ -80,7 +80,7 @@ export default async function GroupsPage() {
                             {status?.allSubmitted ? 'Submitted' : 'Submitted (edit)'}
                           </Link>
                         ) : (
-                          <Link href={`/play/${group.id}`} className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-white bg-[#f43f5e] border-2 border-[#e11d48]">Play</Link>
+                          <Link href="/play" className="inline-flex items-center justify-center min-w-[100px] px-4 py-[7px] rounded-full text-xs font-bold text-white bg-[#f43f5e] border-2 border-[#e11d48]">Play</Link>
                         )}
                         <Link
                           href={`/results/${group.id}`}

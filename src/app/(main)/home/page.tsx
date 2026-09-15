@@ -4,6 +4,7 @@ import { getUserGroups } from '@/lib/api/groups'
 import { getSubmissionStatus } from '@/lib/api/placements'
 import { redirect } from 'next/navigation'
 import { HomeClient } from './HomeClient'
+import { DailyProgressBanner } from './DailyProgressBanner'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -46,6 +47,8 @@ export default async function HomePage() {
           <p className="text-gray-400 font-bold">No prompt for today yet. Check back soon!</p>
         </div>
       )}
+
+      {prompt && <DailyProgressBanner currentUserId={user.id} />}
 
       <div>
         <h2 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Your Groups</h2>

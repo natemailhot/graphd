@@ -54,6 +54,13 @@ export default async function PlayPage({
     )
   }
 
+  // Initial (non-edit) submission always goes through the unified play flow
+  // now, which covers everyone across all your groups at once instead of
+  // just this one — keeps the same person from getting graphed twice.
+  if (!isEditRequest) {
+    redirect('/play')
+  }
+
   const existingPlacements = await getUserPlacements(supabase, groupId, prompt.id, user.id)
 
   // Check if there are new members the user hasn't placed yet
