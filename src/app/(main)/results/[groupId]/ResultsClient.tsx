@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { getGroupPlacements, getUserPlacements, publishResults } from '@/lib/api/placements'
+import { getGroupPlacements, getUserPlacements, publishResults, getGroupLeaderboard } from '@/lib/api/placements'
 import { useRealtimeSubmissions } from '@/hooks/useRealtimeSubmissions'
 import { useGroupMembers } from '@/hooks/useGroupMembers'
 import { ResultsChart } from '@/components/scatter/ResultsChart'
 import { AccuracyPercentList } from '@/components/scatter/AccuracyPercentList'
+import { AwardsPanel } from '@/components/scatter/AwardsPanel'
+import { LeaderboardList } from '@/components/scatter/LeaderboardList'
 import { computeAveragedPositions } from '@/lib/utils/averaging'
-import type { Prompt, AveragedPosition, PlacementPosition } from '@/types/app'
+import type { Prompt, AveragedPosition, PlacementPosition, LeaderboardRow } from '@/types/app'
 
 interface ResultsClientProps {
   groupId: string
@@ -27,6 +29,8 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
   const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null)
   const [overrideView, setOverrideView] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardRow[]>([])
+  const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardRow[]>([])
 
   const showResults = allSubmitted || overrideView || isPublished
 
@@ -48,13 +52,17 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
     Promise.all([
       getGroupPlacements(supabase, groupId, prompt.id),
       getUserPlacements(supabase, groupId, prompt.id, currentUserId),
-    ]).then(([allPlacements, mine]) => {
+      getGroupLeaderboard(supabase, groupId, prompt.id),
+      getGroupLeaderboard(supabase, groupId),
+    ]).then(([allPlacements, mine, todayBoard, allTimeBoard]) => {
       setAveraged(computeAveragedPositions(allPlacements, members))
       setMyPlacements(mine.map(p => ({
         targetUserId: p.target_user_id,
         x: p.x_value,
         y: p.y_value,
       })))
+      setTodayLeaderboard(todayBoard)
+      setAllTimeLeaderboard(allTimeBoard)
     })
   }, [showResults, groupId, prompt.id, members, currentUserId])
 
@@ -165,6 +173,11 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
           onSelect={id => setHighlightedUserId(h => h === id ? null : id)}
         />
       )}
+      {prompt.award_labels && (
+        <AwardsPanel positions={averaged} awardLabels={prompt.award_labels} />
+      )}
+      <LeaderboardList title="Today's Accuracy Leaderboard" rows={todayLeaderboard} currentUserId={currentUserId} />
+      <LeaderboardList title="All-Time Accuracy Leaderboard" rows={allTimeLeaderboard} currentUserId={currentUserId} />
     </div>
   )
 }

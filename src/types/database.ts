@@ -1,5 +1,12 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
+export type AwardLabels = {
+  top_right: string
+  top_left: string
+  bottom_right: string
+  bottom_left: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -101,6 +108,7 @@ export type Database = {
           prompt_date: string | null
           source: string
           created_at: string
+          award_labels: AwardLabels | null
         }
         Insert: {
           id?: string
@@ -109,12 +117,14 @@ export type Database = {
           prompt_date?: string | null
           source?: string
           created_at?: string
+          award_labels?: AwardLabels | null
         }
         Update: {
           x_axis_label?: string
           y_axis_label?: string
           prompt_date?: string | null
           source?: string
+          award_labels?: AwardLabels | null
         }
         Relationships: []
       }
@@ -228,6 +238,16 @@ export type Database = {
       assign_daily_prompt: {
         Args: Record<string, never>
         Returns: string
+      }
+      group_accuracy_leaderboard: {
+        Args: { gid: string; pid?: string | null }
+        Returns: {
+          user_id: string
+          display_name: string
+          avatar_url: string | null
+          avg_match: number
+          placements_count: number
+        }[]
       }
     }
     Enums: Record<string, never>

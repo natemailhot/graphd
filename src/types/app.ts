@@ -41,3 +41,5 @@ export interface GroupPlayState {
   hasSubmitted: boolean
   allSubmitted: boolean
 }
+
+export type LeaderboardRow = Database['public']['Functions']['group_accuracy_leaderboard']['Returns'][number]

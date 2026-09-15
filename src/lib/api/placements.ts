@@ -99,3 +99,16 @@ export async function getPublicationStatus(
   if (error) throw error
   return data !== null
 }
+
+export async function getGroupLeaderboard(
+  supabase: Client,
+  groupId: string,
+  promptId?: string
+) {
+  const { data, error } = await supabase.rpc('group_accuracy_leaderboard', {
+    gid: groupId,
+    pid: promptId ?? null,
+  })
+  if (error) throw error
+  return data
+}
