@@ -8,7 +8,7 @@ interface LeaderboardListProps {
   currentUserId: string
 }
 
-const MEDALS = ['🥇', '🥈', '🥉']
+export const MEDALS = ['🥇', '🥈', '🥉']
 
 export function LeaderboardList({ title, rows, currentUserId }: LeaderboardListProps) {
   if (rows.length === 0) return null

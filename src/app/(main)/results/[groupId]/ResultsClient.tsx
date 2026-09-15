@@ -11,16 +11,18 @@ import { AccuracyPercentList } from '@/components/scatter/AccuracyPercentList'
 import { AwardsPanel } from '@/components/scatter/AwardsPanel'
 import { LeaderboardList } from '@/components/scatter/LeaderboardList'
 import { computeAveragedPositions } from '@/lib/utils/averaging'
+import { buildShareText } from '@/lib/utils/shareText'
 import type { Prompt, AveragedPosition, PlacementPosition, LeaderboardRow } from '@/types/app'
 
 interface ResultsClientProps {
   groupId: string
+  groupName: string
   prompt: Prompt
   currentUserId: string
   isHost: boolean
 }
 
-export function ResultsClient({ groupId, prompt, currentUserId, isHost }: ResultsClientProps) {
+export function ResultsClient({ groupId, groupName, prompt, currentUserId, isHost }: ResultsClientProps) {
   const { members } = useGroupMembers(groupId)
   const { submittedUserIds, totalMembers, allSubmitted, isPublished } = useRealtimeSubmissions(groupId, prompt.id)
   const [averaged, setAveraged] = useState<AveragedPosition[]>([])
@@ -32,8 +34,29 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
   const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardRow[]>([])
   const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardRow[]>([])
   const [leaderboardScope, setLeaderboardScope] = useState<'today' | 'allTime'>('today')
+  const [shareCopied, setShareCopied] = useState(false)
 
   const showResults = allSubmitted || overrideView || isPublished
+
+  const handleShare = async () => {
+    const text = buildShareText({ groupName, prompt, positions: averaged, todayLeaderboard })
+    if (navigator.share) {
+      try {
+        await navigator.share({ text })
+        return
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return // user cancelled the share sheet
+        // fall through to clipboard fallback
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } catch {
+      // nothing more we can do
+    }
+  }
 
   const handlePublish = async () => {
     setPublishing(true)
@@ -157,6 +180,12 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
             {showVectors ? 'Hide' : 'Show'} My Accuracy
           </button>
         )}
+        <button
+          onClick={handleShare}
+          className="px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-white text-gray-400 border-2 border-gray-200 hover:border-violet-200 transition-all"
+        >
+          {shareCopied ? 'Copied!' : 'Share Results'}
+        </button>
       </div>
       <ResultsChart
         xLabel={prompt.x_axis_label}

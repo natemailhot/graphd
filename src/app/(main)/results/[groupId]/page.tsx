@@ -20,10 +20,18 @@ export default async function ResultsPage({
 
   const { data: group } = await supabase
     .from('groups')
-    .select('created_by')
+    .select('name, created_by')
     .eq('id', groupId)
     .single()
   const isHost = group?.created_by === user.id
 
-  return <ResultsClient groupId={groupId} prompt={prompt} currentUserId={user.id} isHost={isHost} />
+  return (
+    <ResultsClient
+      groupId={groupId}
+      groupName={group?.name ?? 'Your Group'}
+      prompt={prompt}
+      currentUserId={user.id}
+      isHost={isHost}
+    />
+  )
 }
