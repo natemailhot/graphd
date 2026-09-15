@@ -50,8 +50,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
     try {
       const supabase = createClient()
       await removeMember(supabase, group.id, userId)
+      setMessage(null)
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error removing member: ' + msg)
+    }
     setLoading(false)
     setConfirmRemove(null)
   }
@@ -61,8 +65,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
     try {
       const supabase = createClient()
       await transferHost(supabase, group.id, newHostId)
+      setMessage(null)
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error transferring host: ' + msg)
+    }
     setLoading(false)
     setConfirmTransfer(null)
   }
@@ -74,7 +82,10 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       await leaveGroup(supabase, group.id, currentUserId)
       router.push('/groups')
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error leaving group: ' + msg)
+    }
     setLoading(false)
     setConfirmLeave(false)
   }
@@ -86,7 +97,10 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       await deleteGroup(supabase, group.id)
       router.push('/groups')
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error deleting group: ' + msg)
+    }
     setLoading(false)
     setConfirmDelete(false)
   }
@@ -125,8 +139,12 @@ export function GroupDetailClient({ group, currentUserId, userSubmitted, allSubm
       const supabase = createClient()
       await toggleGameplay(supabase, group.id, true)
       setGameplayEnabled(true)
+      setMessage(null)
       router.refresh()
-    } catch { /* ignore */ }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setMessage('Error enabling gameplay: ' + msg)
+    }
     setLoading(false)
   }
 
