@@ -29,10 +29,11 @@ export function buildShareText(input: ShareTextInput): string {
 }
 
 function buildHeader({ groupName, prompt }: ShareTextInput): string {
-  const lines = [`graphd · ${groupName}`, prompt.x_axis_label, 'vs.', prompt.y_axis_label]
+  const titleParts = [`graphd · ${groupName}`]
   if (prompt.prompt_date) {
-    lines.push(formatDate(prompt.prompt_date))
+    titleParts.push(formatDate(prompt.prompt_date))
   }
+  const lines = [titleParts.join(' · '), '—————————', prompt.x_axis_label, 'vs.', prompt.y_axis_label]
   return lines.join('\n')
 }
 
