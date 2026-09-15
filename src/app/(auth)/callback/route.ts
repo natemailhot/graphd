@@ -12,6 +12,9 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    console.error('exchangeCodeForSession failed:', error.message)
+  } else {
+    console.error('OAuth callback hit with no code param:', request.url)
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`)
