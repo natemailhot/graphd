@@ -43,9 +43,10 @@ export function AccuracyPercentList({ positions, myPlacements, selectedUserId, o
           <button
             key={pos.targetUserId}
             onClick={() => onSelect?.(pos.targetUserId)}
-            className={`w-full flex items-center gap-3 p-2.5 card rounded-xl text-left transition-colors ${
+            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-colors ${
               onSelect ? 'cursor-pointer' : ''
-            } ${isSelected ? 'ring-2 ring-rose-300' : ''}`}
+            } ${isSelected ? '' : 'card'}`}
+            style={isSelected ? { background: '#fff1f2', border: '2px solid #fda4af', boxShadow: '0 0 0 2px #fecdd3' } : undefined}
           >
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color.bg }} />
             <span className="flex-1 text-sm font-semibold text-gray-700 truncate">{pos.profile.display_name}</span>
