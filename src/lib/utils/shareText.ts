@@ -3,10 +3,6 @@ import { computeAwardWinners, AWARD_CORNERS } from '@/lib/utils/awards'
 import { formatDate } from '@/lib/utils/dates'
 import { MEDALS } from '@/components/scatter/LeaderboardList'
 
-const GRID_SIZE = 5
-const GRID_EMOJI = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣']
-const EMPTY_CELL = '⬜'
-
 export interface ShareTextInput {
   groupName: string
   prompt: Prompt
@@ -26,14 +22,14 @@ export function buildShareText(input: ShareTextInput): string {
   if (leaderboardSection) sections.push(leaderboardSection)
 
   if (input.positions.length > 0) {
-    sections.push(buildGridSection(input.positions, input.prompt))
+    sections.push(buildQuadrantSection(input.positions))
   }
 
   return sections.join('\n\n')
 }
 
 function buildHeader({ groupName, prompt }: ShareTextInput): string {
-  const lines = [`graphd · ${groupName}`, `${prompt.x_axis_label} vs. ${prompt.y_axis_label}`]
+  const lines = [`graphd · ${groupName}`, prompt.x_axis_label, 'vs.', prompt.y_axis_label]
   if (prompt.prompt_date) {
     lines.push(formatDate(prompt.prompt_date))
   }
@@ -64,50 +60,22 @@ function buildLeaderboardSection(rows: LeaderboardRow[]): string | null {
   return lines.join('\n')
 }
 
-function buildGridSection(positions: AveragedPosition[], prompt: Prompt): string {
-  const occupied = new Set<string>()
-  const cells = new Map<string, string>() // "row,col" -> emoji
-  const legendEntries: string[] = []
+const QUADRANTS: { emoji: string; test: (x: number, y: number) => boolean }[] = [
+  { emoji: '↗️', test: (x, y) => x >= 0.5 && y >= 0.5 },
+  { emoji: '↖️', test: (x, y) => x < 0.5 && y >= 0.5 },
+  { emoji: '↘️', test: (x, y) => x >= 0.5 && y < 0.5 },
+  { emoji: '↙️', test: (x, y) => x < 0.5 && y < 0.5 },
+]
 
-  positions.forEach((pos, i) => {
-    const emoji = GRID_EMOJI[i % GRID_EMOJI.length]
-    const targetCol = Math.round(pos.x * (GRID_SIZE - 1))
-    const targetRow = Math.round((1 - pos.y) * (GRID_SIZE - 1))
-    const [row, col] = findFreeCell(targetRow, targetCol, occupied)
-    occupied.add(`${row},${col}`)
-    cells.set(`${row},${col}`, emoji)
-    legendEntries.push(`${emoji} ${pos.profile.display_name.split(' ')[0]}`)
-  })
-
-  const gridRows: string[] = []
-  for (let row = 0; row < GRID_SIZE; row++) {
-    let line = ''
-    for (let col = 0; col < GRID_SIZE; col++) {
-      line += cells.get(`${row},${col}`) ?? EMPTY_CELL
-    }
-    gridRows.push(line)
-  }
-
-  return [`${prompt.x_axis_label} × ${prompt.y_axis_label}`, gridRows.join('\n'), legendEntries.join('  ')].join('\n')
-}
-
-function findFreeCell(row: number, col: number, occupied: Set<string>): [number, number] {
-  const inBounds = (r: number, c: number) => r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE
-
-  if (inBounds(row, col) && !occupied.has(`${row},${col}`)) return [row, col]
-
-  for (let radius = 1; radius < GRID_SIZE * 2; radius++) {
-    for (let dr = -radius; dr <= radius; dr++) {
-      for (let dc = -radius; dc <= radius; dc++) {
-        // only check the perimeter of this ring
-        if (Math.max(Math.abs(dr), Math.abs(dc)) !== radius) continue
-        const r = row + dr
-        const c = col + dc
-        if (inBounds(r, c) && !occupied.has(`${r},${c}`)) return [r, c]
-      }
+function buildQuadrantSection(positions: AveragedPosition[]): string {
+  const lines = ['📍 Where Everyone Landed']
+  for (const quadrant of QUADRANTS) {
+    const names = positions
+      .filter(p => quadrant.test(p.x, p.y))
+      .map(p => p.profile.display_name.split(' ')[0])
+    if (names.length > 0) {
+      lines.push(`${quadrant.emoji} ${names.join(', ')}`)
     }
   }
-
-  // Grid is completely full (more people than cells) — fall back to clamped original position
-  return [Math.min(Math.max(row, 0), GRID_SIZE - 1), Math.min(Math.max(col, 0), GRID_SIZE - 1)]
+  return lines.join('\n')
 }
