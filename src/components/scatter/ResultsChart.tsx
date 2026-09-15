@@ -1,6 +1,7 @@
 'use client'
 
 import type { AveragedPosition, PlacementPosition } from '@/types/app'
+import { resolveOverlaps } from '@/lib/utils/declutter'
 
 const SIZE = 460
 const MARGIN = 50
@@ -12,8 +13,10 @@ const CENTER_X = (LEFT + RIGHT) / 2
 const CENTER_Y = (TOP + BOTTOM) / 2
 const PLOT_W = RIGHT - LEFT
 const PLOT_H = BOTTOM - TOP
+const DOT_RADIUS = 16
+const MIN_DOT_SPACING = DOT_RADIUS * 2 + 6
 
-const AVATAR_COLORS = [
+export const AVATAR_COLORS = [
   { bg: '#f43f5e', ring: '#e11d48' },
   { bg: '#f97316', ring: '#ea580c' },
   { bg: '#eab308', ring: '#ca8a04' },
@@ -28,19 +31,42 @@ interface ResultsChartProps {
   positions: AveragedPosition[]
   currentUserId: string
   myPlacements?: PlacementPosition[]
+  /** When set, draws a single accuracy vector + ghost dot for just this person. */
+  highlightUserId?: string | null
+  showLegend?: boolean
 }
 
-export function ResultsChart({ xLabel, yLabel, positions, currentUserId, myPlacements }: ResultsChartProps) {
+export function ResultsChart({
+  xLabel,
+  yLabel,
+  positions,
+  currentUserId,
+  myPlacements,
+  highlightUserId,
+  showLegend = true,
+}: ResultsChartProps) {
   const toSvgX = (n: number) => LEFT + n * PLOT_W
   const toSvgY = (n: number) => BOTTOM - n * PLOT_H
 
-  // Build a map of my placements by target user
   const myMap = new Map<string, { x: number; y: number }>()
   if (myPlacements) {
     for (const p of myPlacements) {
       myMap.set(p.targetUserId, { x: p.x, y: p.y })
     }
   }
+
+  // Resolve overlaps once, in SVG pixel space, so clustered averages never
+  // fully overlap — this is what the dots actually render at.
+  const resolved = resolveOverlaps(
+    positions.map(pos => ({ id: pos.targetUserId, x: toSvgX(pos.x), y: toSvgY(pos.y) })),
+    MIN_DOT_SPACING,
+    { left: LEFT + DOT_RADIUS, right: RIGHT - DOT_RADIUS, top: TOP + DOT_RADIUS, bottom: BOTTOM - DOT_RADIUS }
+  )
+  const resolvedMap = new Map(resolved.map(r => [r.id, r]))
+
+  const highlighted = highlightUserId ? positions.find(p => p.targetUserId === highlightUserId) : null
+  const highlightedMine = highlighted ? myMap.get(highlighted.targetUserId) : null
+  const highlightedDot = highlighted ? resolvedMap.get(highlighted.targetUserId) : null
 
   return (
     <div className="card rounded-2xl p-4">
@@ -78,98 +104,84 @@ export function ResultsChart({ xLabel, yLabel, positions, currentUserId, myPlace
         <text x={CENTER_X} y={BOTTOM + 16} textAnchor="middle" fill="#a8a3b8" fontSize="9">Low</text>
         <text x={CENTER_X} y={TOP - 6} textAnchor="middle" fill="#a8a3b8" fontSize="9">High</text>
 
-        {/* Vector lines: from my placement to group average */}
-        {myPlacements && positions.map((pos) => {
-          const mine = myMap.get(pos.targetUserId)
-          if (!mine) return null
-          const fromX = toSvgX(mine.x)
-          const fromY = toSvgY(mine.y)
-          const toX = toSvgX(pos.x)
-          const toY = toSvgY(pos.y)
-          // Shorten the line so it doesn't overlap the circles
+        {/* Single highlighted accuracy vector, when requested */}
+        {highlighted && highlightedMine && highlightedDot && (() => {
+          const fromX = toSvgX(highlightedMine.x)
+          const fromY = toSvgY(highlightedMine.y)
+          const toX = highlightedDot.x
+          const toY = highlightedDot.y
           const dx = toX - fromX
           const dy = toY - fromY
           const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 4) return null // too close, skip
+          if (dist < 4) return null
           const startOffset = 10
           const endOffset = 18
           const sx = fromX + (dx / dist) * startOffset
           const sy = fromY + (dy / dist) * startOffset
           const ex = toX - (dx / dist) * endOffset
           const ey = toY - (dy / dist) * endOffset
+          const initials = highlighted.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
           return (
-            <line
-              key={`vec-${pos.targetUserId}`}
-              x1={sx} y1={sy} x2={ex} y2={ey}
-              stroke="rgba(244,63,94,0.5)"
-              strokeWidth="1.5"
-              strokeDasharray="4 3"
-              markerEnd="url(#vector-arrow)"
-            />
-          )
-        })}
-
-        {/* My placement ghost dots (when vectors shown) */}
-        {myPlacements && positions.map((pos, i) => {
-          const mine = myMap.get(pos.targetUserId)
-          if (!mine) return null
-          const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
-          const initials = pos.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-          return (
-            <g key={`my-${pos.targetUserId}`}>
+            <g>
+              <line
+                x1={sx} y1={sy} x2={ex} y2={ey}
+                stroke="rgba(244,63,94,0.6)"
+                strokeWidth="2"
+                strokeDasharray="4 3"
+                markerEnd="url(#vector-arrow)"
+              />
               <circle
-                cx={toSvgX(mine.x)}
-                cy={toSvgY(mine.y)}
-                r={10}
-                fill={color.bg}
-                opacity={0.35}
-                stroke={color.ring}
-                strokeWidth="1"
+                cx={fromX}
+                cy={fromY}
+                r={11}
+                fill="white"
+                opacity={0.9}
+                stroke="#f43f5e"
+                strokeWidth="1.5"
                 strokeDasharray="3 2"
               />
-              <text
-                x={toSvgX(mine.x)} y={toSvgY(mine.y)}
-                textAnchor="middle" dy="3" fill="white" fontSize="7" fontWeight="bold" opacity={0.5}
-              >
+              <text x={fromX} y={fromY} textAnchor="middle" dy="3" fill="#f43f5e" fontSize="8" fontWeight="bold">
                 {initials}
               </text>
             </g>
           )
-        })}
+        })()}
 
         {/* Result dots (group average) */}
         {positions.map((pos, i) => {
           const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
           const isMe = pos.targetUserId === currentUserId
+          const isHighlighted = pos.targetUserId === highlightUserId
           const initials = pos.profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-          const cx = toSvgX(pos.x)
-          const cy = toSvgY(pos.y)
+          const dot = resolvedMap.get(pos.targetUserId)!
+          const cx = dot.x
+          const cy = dot.y
 
           return (
             <g key={pos.targetUserId}>
               <defs>
                 <clipPath id={`result-clip-${pos.targetUserId}`}>
-                  <circle cx={cx} cy={cy} r={16} />
+                  <circle cx={cx} cy={cy} r={DOT_RADIUS} />
                 </clipPath>
               </defs>
               <circle
                 cx={cx}
                 cy={cy}
-                r={16}
+                r={DOT_RADIUS}
                 fill={color.bg}
-                stroke={color.ring}
-                strokeWidth={isMe ? 2.5 : 1.5}
-                opacity={0.9}
+                stroke={isHighlighted ? '#f43f5e' : color.ring}
+                strokeWidth={isHighlighted ? 3 : isMe ? 2.5 : 1.5}
+                opacity={0.92}
                 style={{ filter: `drop-shadow(0 2px 6px ${color.bg}50)` }}
               />
               {pos.profile.avatar_url ? (
                 <image
                   href={pos.profile.avatar_url}
-                  x={cx - 16}
-                  y={cy - 16}
-                  width={32}
-                  height={32}
+                  x={cx - DOT_RADIUS}
+                  y={cy - DOT_RADIUS}
+                  width={DOT_RADIUS * 2}
+                  height={DOT_RADIUS * 2}
                   clipPath={`url(#result-clip-${pos.targetUserId})`}
                   pointerEvents="none"
                 />
@@ -178,13 +190,28 @@ export function ResultsChart({ xLabel, yLabel, positions, currentUserId, myPlace
                   {initials}
                 </text>
               )}
-              <text x={cx} y={cy + 24} textAnchor="middle" fill="#9ca3af" fontSize="9">
-                {pos.profile.display_name}
-              </text>
             </g>
           )
         })}
       </svg>
+
+      {showLegend && (
+        <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+          {positions.map((pos, i) => {
+            const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
+            const isMe = pos.targetUserId === currentUserId
+            return (
+              <div key={pos.targetUserId} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color.bg }} />
+                <span className="text-xs font-bold text-gray-700">
+                  {pos.profile.display_name}
+                  {isMe && <span className="text-gray-400 font-normal"> (you)</span>}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
