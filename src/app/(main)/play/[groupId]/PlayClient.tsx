@@ -13,9 +13,10 @@ interface PlayClientProps {
   members: Profile[]
   currentUserId: string
   existingPositions: PlacementPosition[]
+  editMode?: boolean
 }
 
-export function PlayClient({ groupId, prompt, members, currentUserId, existingPositions }: PlayClientProps) {
+export function PlayClient({ groupId, prompt, members, currentUserId, existingPositions, editMode = false }: PlayClientProps) {
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
 
@@ -36,18 +37,21 @@ export function PlayClient({ groupId, prompt, members, currentUserId, existingPo
     }
   }
 
-  // Show only unplaced members in new-member mode
+  // Show only unplaced members in new-member mode; editing shows everyone, pre-filled
   const membersForCanvas = isNewMemberMode ? newMembers : otherMembers
+  const initialPositionsForCanvas = isNewMemberMode ? [] : existingPositions
 
   return (
     <div className="space-y-4">
       <div className="text-center">
         <h1 className="text-lg font-bold text-gray-800">
-          {isNewMemberMode ? 'New members joined!' : 'Place your friends!'}
+          {isNewMemberMode ? 'New members joined!' : editMode ? 'Edit your answers' : 'Place your friends!'}
         </h1>
         <p className="text-sm text-gray-400 mt-1">
           {isNewMemberMode
             ? `Place ${newMembers.length} new member${newMembers.length !== 1 ? 's' : ''} on the chart`
+            : editMode
+            ? 'Drag anyone to update your answer, then resubmit'
             : 'Drag each person onto the chart'}
         </p>
       </div>
@@ -57,7 +61,7 @@ export function PlayClient({ groupId, prompt, members, currentUserId, existingPo
         members={membersForCanvas}
         currentUserId={currentUserId}
         onSubmit={handleSubmit}
-        initialPositions={[]}
+        initialPositions={initialPositionsForCanvas}
         submitting={submitting}
       />
     </div>

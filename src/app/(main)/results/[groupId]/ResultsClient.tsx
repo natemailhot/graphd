@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { getGroupPlacements, getUserPlacements } from '@/lib/api/placements'
 import { useRealtimeSubmissions } from '@/hooks/useRealtimeSubmissions'
@@ -58,14 +59,24 @@ export function ResultsClient({ groupId, prompt, currentUserId, isHost }: Result
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
             <div className="w-2.5 h-2.5 rounded-full bg-violet-400 bounce-dot" />
           </div>
-          {isHost && (
-            <button
-              onClick={() => setOverrideView(true)}
-              className="mt-5 text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
-            >
-              View results anyway
-            </button>
-          )}
+          <div className="flex justify-center gap-4 mt-5">
+            {submittedUserIds.has(currentUserId) && (
+              <Link
+                href={`/play/${groupId}?edit=1`}
+                className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
+              >
+                Edit my answers
+              </Link>
+            )}
+            {isHost && (
+              <button
+                onClick={() => setOverrideView(true)}
+                className="text-xs font-bold text-violet-400 hover:text-violet-500 transition-colors"
+              >
+                View results anyway
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
