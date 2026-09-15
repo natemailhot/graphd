@@ -1,7 +1,5 @@
 import type { AveragedPosition, LeaderboardRow, Prompt } from '@/types/app'
-import { computeAwardWinners, AWARD_CORNERS } from '@/lib/utils/awards'
 import { formatDate } from '@/lib/utils/dates'
-import { MEDALS } from '@/components/scatter/LeaderboardList'
 
 export interface ShareTextInput {
   groupName: string
@@ -13,13 +11,8 @@ export interface ShareTextInput {
 export function buildShareText(input: ShareTextInput): string {
   const sections = [buildHeader(input)]
 
-  if (input.prompt.award_labels) {
-    const awardsSection = buildAwardsSection(input.positions, input.prompt.award_labels)
-    if (awardsSection) sections.push(awardsSection)
-  }
-
-  const leaderboardSection = buildLeaderboardSection(input.todayLeaderboard)
-  if (leaderboardSection) sections.push(leaderboardSection)
+  const accuracySection = buildAccuracySection(input.todayLeaderboard)
+  if (accuracySection) sections.push(accuracySection)
 
   if (input.positions.length > 0) {
     sections.push(buildQuadrantSection(input.positions))
@@ -37,27 +30,18 @@ function buildHeader({ groupName, prompt }: ShareTextInput): string {
   return lines.join('\n')
 }
 
-function buildAwardsSection(positions: AveragedPosition[], awardLabels: NonNullable<Prompt['award_labels']>): string | null {
-  const winners = computeAwardWinners(positions, awardLabels)
-  if (winners.length === 0) return null
-
-  const byKey = new Map(winners.map(w => [w.key, w]))
-  const lines = ['🏆 Awards']
-  for (const corner of AWARD_CORNERS) {
-    const w = byKey.get(corner.key)
-    if (w) lines.push(`${w.emoji} ${w.label} — ${w.winner.profile.display_name}`)
-  }
-  return lines.join('\n')
-}
-
-function buildLeaderboardSection(rows: LeaderboardRow[]): string | null {
+function buildAccuracySection(rows: LeaderboardRow[]): string | null {
   if (rows.length === 0) return null
 
+  // rows are already sorted best-to-worst by the group_accuracy_leaderboard RPC
+  const most = rows[0]
+  const least = rows[rows.length - 1]
+
   const lines = ["🎯 Today's Accuracy"]
-  rows.slice(0, 3).forEach((row, i) => {
-    const medal = MEDALS[i] ?? `#${i + 1}`
-    lines.push(`${medal} ${row.display_name} — ${row.avg_match}%`)
-  })
+  lines.push(`🥇 Most accurate: ${most.display_name} — ${most.avg_match}%`)
+  if (least.user_id !== most.user_id) {
+    lines.push(`🐢 Least accurate: ${least.display_name} — ${least.avg_match}%`)
+  }
   return lines.join('\n')
 }
 

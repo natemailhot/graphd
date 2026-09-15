@@ -70,6 +70,14 @@ export function ResultsChart({
 
   return (
     <div className="card rounded-2xl p-4">
+      <div className="mb-3 space-y-1">
+        <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: '#7c3aed' }}>
+          <span>↔️</span> {xLabel}
+        </p>
+        <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: '#e11d48' }}>
+          <span>↕️</span> {yLabel}
+        </p>
+      </div>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full">
         {/* Arrow marker for vectors */}
         <defs>
@@ -85,24 +93,24 @@ export function ResultsChart({
         <rect x={CENTER_X} y={CENTER_Y} width={PLOT_W / 2} height={PLOT_H / 2} fill="rgba(34,197,94,0.04)" />
 
         {/* Cross axes */}
-        <line x1={LEFT} y1={CENTER_Y} x2={RIGHT} y2={CENTER_Y} stroke="#ddd6fe" strokeWidth="1.5" />
-        <line x1={CENTER_X} y1={TOP} x2={CENTER_X} y2={BOTTOM} stroke="#ddd6fe" strokeWidth="1.5" />
+        <line x1={LEFT} y1={CENTER_Y} x2={RIGHT} y2={CENTER_Y} stroke="#c4b5fd" strokeWidth="1.5" />
+        <line x1={CENTER_X} y1={TOP} x2={CENTER_X} y2={BOTTOM} stroke="#fda4af" strokeWidth="1.5" />
 
         {/* Arrows */}
-        <polygon points={`${RIGHT},${CENTER_Y} ${RIGHT - 7},${CENTER_Y - 4} ${RIGHT - 7},${CENTER_Y + 4}`} fill="#c4b5fd" />
-        <polygon points={`${LEFT},${CENTER_Y} ${LEFT + 7},${CENTER_Y - 4} ${LEFT + 7},${CENTER_Y + 4}`} fill="#c4b5fd" />
-        <polygon points={`${CENTER_X},${TOP} ${CENTER_X - 4},${TOP + 7} ${CENTER_X + 4},${TOP + 7}`} fill="#c4b5fd" />
-        <polygon points={`${CENTER_X},${BOTTOM} ${CENTER_X - 4},${BOTTOM - 7} ${CENTER_X + 4},${BOTTOM - 7}`} fill="#c4b5fd" />
+        <polygon points={`${RIGHT},${CENTER_Y} ${RIGHT - 7},${CENTER_Y - 4} ${RIGHT - 7},${CENTER_Y + 4}`} fill="#8b5cf6" />
+        <polygon points={`${LEFT},${CENTER_Y} ${LEFT + 7},${CENTER_Y - 4} ${LEFT + 7},${CENTER_Y + 4}`} fill="#8b5cf6" />
+        <polygon points={`${CENTER_X},${TOP} ${CENTER_X - 4},${TOP + 7} ${CENTER_X + 4},${TOP + 7}`} fill="#f43f5e" />
+        <polygon points={`${CENTER_X},${BOTTOM} ${CENTER_X - 4},${BOTTOM - 7} ${CENTER_X + 4},${BOTTOM - 7}`} fill="#f43f5e" />
 
         {/* X axis label + endpoints */}
         <text x={CENTER_X} y={SIZE - 8} textAnchor="middle" fill="#8b5cf6" fontSize="11" fontWeight="600">{xLabel}?</text>
-        <text x={LEFT} y={CENTER_Y + 18} textAnchor="start" fill="#a8a3b8" fontSize="9">Low</text>
-        <text x={RIGHT} y={CENTER_Y + 18} textAnchor="end" fill="#a8a3b8" fontSize="9">High</text>
+        <text x={LEFT} y={CENTER_Y + 18} textAnchor="start" fill="#8b5cf6" fontSize="9">Low</text>
+        <text x={RIGHT} y={CENTER_Y + 18} textAnchor="end" fill="#8b5cf6" fontSize="9">High</text>
 
         {/* Y axis label + endpoints */}
         <text x={14} y={CENTER_Y} textAnchor="middle" fill="#f43f5e" fontSize="11" fontWeight="600" transform={`rotate(-90, 14, ${CENTER_Y})`}>{yLabel}?</text>
-        <text x={CENTER_X} y={BOTTOM + 16} textAnchor="middle" fill="#a8a3b8" fontSize="9">Low</text>
-        <text x={CENTER_X} y={TOP - 6} textAnchor="middle" fill="#a8a3b8" fontSize="9">High</text>
+        <text x={CENTER_X} y={BOTTOM + 16} textAnchor="middle" fill="#f43f5e" fontSize="9">Low</text>
+        <text x={CENTER_X} y={TOP - 6} textAnchor="middle" fill="#f43f5e" fontSize="9">High</text>
 
         {/* Single highlighted accuracy vector, when requested */}
         {highlighted && highlightedMine && highlightedDot && (() => {
