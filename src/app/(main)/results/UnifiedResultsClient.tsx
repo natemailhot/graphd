@@ -20,9 +20,10 @@ interface UnifiedResultsClientProps {
   date: string
   availableDates: string[]
   todaysPrompt: { x: string; y: string } | null
+  tomorrowsPromptTeaser: string | null
 }
 
-export function UnifiedResultsClient({ groups, prompt, currentUserId, date, availableDates, todaysPrompt }: UnifiedResultsClientProps) {
+export function UnifiedResultsClient({ groups, prompt, currentUserId, date, availableDates, todaysPrompt, tomorrowsPromptTeaser }: UnifiedResultsClientProps) {
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0].id)
   const selectedGroup = groups.find(g => g.id === selectedGroupId) ?? groups[0]
   const router = useRouter()
@@ -59,6 +60,12 @@ export function UnifiedResultsClient({ groups, prompt, currentUserId, date, avai
           </Link>
         )}
       </div>
+
+      {tomorrowsPromptTeaser && (
+        <p className="text-center text-xs text-gray-300">
+          Sneak peek — tomorrow: <span className="font-bold text-gray-400">{tomorrowsPromptTeaser}...?</span>
+        </p>
+      )}
 
       {groups.length > 1 && (
         <div className="flex flex-wrap justify-center gap-2">

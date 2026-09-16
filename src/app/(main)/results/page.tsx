@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getPromptByDate, getPastPrompts, getTodayPrompt } from '@/lib/api/prompts'
 import { getUserGroups } from '@/lib/api/groups'
-import { getYesterdayUTC, formatDate } from '@/lib/utils/dates'
+import { getYesterdayUTC, getTomorrowUTC, formatDate } from '@/lib/utils/dates'
 import { redirect } from 'next/navigation'
 import { UnifiedResultsClient } from './UnifiedResultsClient'
 
@@ -17,11 +17,12 @@ export default async function UnifiedResultsPage({
   const { date } = await searchParams
   const targetDate = date ?? getYesterdayUTC()
 
-  const [groups, prompt, pastPrompts, todayPrompt] = await Promise.all([
+  const [groups, prompt, pastPrompts, todayPrompt, tomorrowPrompt] = await Promise.all([
     getUserGroups(supabase, user.id).catch(() => []),
     getPromptByDate(supabase, targetDate).catch(() => null),
     getPastPrompts(supabase, 60).catch(() => []),
     getTodayPrompt(supabase).catch(() => null),
+    getPromptByDate(supabase, getTomorrowUTC()).catch(() => null),
   ])
 
   if (groups.length === 0) {
@@ -57,6 +58,7 @@ export default async function UnifiedResultsPage({
       date={targetDate}
       availableDates={availableDates}
       todaysPrompt={todayPrompt ? { x: todayPrompt.x_axis_label, y: todayPrompt.y_axis_label } : null}
+      tomorrowsPromptTeaser={tomorrowPrompt ? tomorrowPrompt.x_axis_label : null}
     />
   )
 }

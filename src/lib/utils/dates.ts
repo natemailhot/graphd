@@ -21,3 +21,9 @@ export function getYesterdayUTC(): string {
   today.setUTCDate(today.getUTCDate() - 1)
   return today.toISOString().slice(0, 10)
 }
+
+export function getTomorrowUTC(): string {
+  const today = new Date(getTodayUTC() + 'T00:00:00Z')
+  today.setUTCDate(today.getUTCDate() + 1)
+  return today.toISOString().slice(0, 10)
+}

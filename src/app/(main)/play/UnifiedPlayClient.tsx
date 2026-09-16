@@ -13,9 +13,10 @@ interface UnifiedPlayClientProps {
   currentUserId: string
   editMode?: boolean
   yesterdaysPrompt?: { x: string; y: string } | null
+  tomorrowsPromptTeaser?: string | null
 }
 
-export function UnifiedPlayClient({ currentUserId, editMode = false, yesterdaysPrompt = null }: UnifiedPlayClientProps) {
+export function UnifiedPlayClient({ currentUserId, editMode = false, yesterdaysPrompt = null, tomorrowsPromptTeaser = null }: UnifiedPlayClientProps) {
   const [state, setState] = useState<CombinedPlayState | null>(null)
   const [revealedGroupIds, setRevealedGroupIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -54,6 +55,12 @@ export function UnifiedPlayClient({ currentUserId, editMode = false, yesterdaysP
         ← See yesterday&apos;s results: {yesterdaysPrompt.x} vs {yesterdaysPrompt.y}
       </Link>
     </div>
+  )
+
+  const tomorrowTeaser = tomorrowsPromptTeaser && (
+    <p className="text-center text-xs text-gray-300">
+      Sneak peek — tomorrow: <span className="font-bold text-gray-400">{tomorrowsPromptTeaser}...?</span>
+    </p>
   )
 
   let content: React.ReactNode
@@ -179,6 +186,7 @@ export function UnifiedPlayClient({ currentUserId, editMode = false, yesterdaysP
     <div className="space-y-4">
       {yesterdayLink}
       {content}
+      {tomorrowTeaser}
     </div>
   )
 }
