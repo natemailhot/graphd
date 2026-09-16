@@ -15,6 +15,7 @@ export default async function HistoryPage() {
     getPastPrompts(supabase),
     getUserGroups(supabase, user.id).catch(() => []),
   ])
+  const hasGroups = groups.length > 0
 
   return (
     <div className="space-y-6">
@@ -35,14 +36,13 @@ export default async function HistoryPage() {
                 <p className="text-sm text-gray-700"><span className="font-bold text-gray-400">X:</span> {prompt.x_axis_label}?</p>
                 <p className="text-sm text-gray-700"><span className="font-bold text-gray-400">Y:</span> {prompt.y_axis_label}?</p>
               </div>
-              {groups.length > 0 && prompt.prompt_date && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {groups.map(g => (
-                    <Link key={g.id} href={`/results/${g.id}/${prompt.prompt_date}`} className="text-xs px-2.5 py-1 rounded-full bg-violet-50 text-violet-500 font-bold border border-violet-200 hover:bg-violet-100 transition-colors">
-                      {g.name}
-                    </Link>
-                  ))}
-                </div>
+              {hasGroups && prompt.prompt_date && (
+                <Link
+                  href={`/results?date=${prompt.prompt_date}`}
+                  className="inline-block mt-3 text-xs px-2.5 py-1 rounded-full bg-violet-50 text-violet-500 font-bold border border-violet-200 hover:bg-violet-100 transition-colors"
+                >
+                  View results
+                </Link>
               )}
             </div>
           ))}

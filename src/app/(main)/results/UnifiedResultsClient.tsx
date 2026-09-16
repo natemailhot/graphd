@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { formatDate } from '@/lib/utils/dates'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { formatDate, getTodayUTC } from '@/lib/utils/dates'
 import { ResultsClient } from './[groupId]/ResultsClient'
 import type { Prompt } from '@/types/app'
 
@@ -16,23 +18,46 @@ interface UnifiedResultsClientProps {
   prompt: Prompt
   currentUserId: string
   date: string
+  availableDates: string[]
+  todaysPrompt: { x: string; y: string } | null
 }
 
-export function UnifiedResultsClient({ groups, prompt, currentUserId, date }: UnifiedResultsClientProps) {
+export function UnifiedResultsClient({ groups, prompt, currentUserId, date, availableDates, todaysPrompt }: UnifiedResultsClientProps) {
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0].id)
   const selectedGroup = groups.find(g => g.id === selectedGroupId) ?? groups[0]
+  const router = useRouter()
+  const isToday = date === getTodayUTC()
 
   return (
     <div className="space-y-4">
       <div className="card p-6 text-center">
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-violet-50 text-violet-400 border-2 border-violet-200 mb-4">
-          {formatDate(date)}
-        </span>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          {availableDates.length > 1 ? (
+            <select
+              value={date}
+              onChange={e => router.push(`/results?date=${e.target.value}`)}
+              className="text-xs font-black tracking-wide uppercase bg-violet-50 text-violet-400 border-2 border-violet-200 rounded-full px-3 py-1 appearance-none text-center cursor-pointer"
+            >
+              {availableDates.map(d => (
+                <option key={d} value={d}>{formatDate(d)}</option>
+              ))}
+            </select>
+          ) : (
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-violet-50 text-violet-400 border-2 border-violet-200">
+              {formatDate(date)}
+            </span>
+          )}
+        </div>
         <div className="space-y-3">
           <p className="text-lg font-black text-blue-500">{prompt.x_axis_label}?</p>
           <div className="text-2xl text-gray-200 font-black">vs</div>
           <p className="text-lg font-black text-rose-400">{prompt.y_axis_label}?</p>
         </div>
+        {!isToday && todaysPrompt && (
+          <Link href="/play" className="inline-block mt-4 text-xs font-bold text-gray-400 hover:text-violet-500 transition-colors">
+            Play today&apos;s prompt: {todaysPrompt.x} vs {todaysPrompt.y} →
+          </Link>
+        )}
       </div>
 
       {groups.length > 1 && (

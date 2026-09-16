@@ -13,8 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://graphd.app"),
   title: "Graphd - Graph Your Friends Daily",
   description: "A daily social game where you place your friends on scatter plots",
+  openGraph: {
+    title: "Graphd - Graph Your Friends Daily",
+    description: "A daily social game where you place your friends on scatter plots",
+    siteName: "Graphd",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

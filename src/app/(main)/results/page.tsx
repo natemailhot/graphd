@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getPromptByDate } from '@/lib/api/prompts'
+import { getPromptByDate, getPastPrompts, getTodayPrompt } from '@/lib/api/prompts'
 import { getUserGroups } from '@/lib/api/groups'
 import { getYesterdayUTC, formatDate } from '@/lib/utils/dates'
 import { redirect } from 'next/navigation'
@@ -17,9 +17,11 @@ export default async function UnifiedResultsPage({
   const { date } = await searchParams
   const targetDate = date ?? getYesterdayUTC()
 
-  const [groups, prompt] = await Promise.all([
+  const [groups, prompt, pastPrompts, todayPrompt] = await Promise.all([
     getUserGroups(supabase, user.id).catch(() => []),
     getPromptByDate(supabase, targetDate).catch(() => null),
+    getPastPrompts(supabase, 60).catch(() => []),
+    getTodayPrompt(supabase).catch(() => null),
   ])
 
   if (groups.length === 0) {
@@ -30,10 +32,19 @@ export default async function UnifiedResultsPage({
     )
   }
 
+  const availableDates = pastPrompts
+    .map(p => p.prompt_date)
+    .filter((d): d is string => !!d)
+
   if (!prompt) {
     return (
-      <div className="card rounded-2xl p-8 text-center">
+      <div className="card rounded-2xl p-8 text-center space-y-3">
         <p className="text-gray-400 font-bold">No prompt found for {formatDate(targetDate)}.</p>
+        {availableDates.length > 0 && (
+          <a href={`/results?date=${availableDates[0]}`} className="inline-block text-sm font-bold text-violet-400 hover:text-violet-500 transition-colors">
+            Go to most recent results
+          </a>
+        )}
       </div>
     )
   }
@@ -44,6 +55,8 @@ export default async function UnifiedResultsPage({
       prompt={prompt}
       currentUserId={user.id}
       date={targetDate}
+      availableDates={availableDates}
+      todaysPrompt={todayPrompt ? { x: todayPrompt.x_axis_label, y: todayPrompt.y_axis_label } : null}
     />
   )
 }
