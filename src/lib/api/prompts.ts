@@ -54,6 +54,14 @@ export async function getPromptByDate(supabase: Client, date: string) {
   return data
 }
 
+/** One axis label of tomorrow's prompt, via a SECURITY DEFINER function — RLS
+ * intentionally hides the full future-dated row from regular queries. */
+export async function getTomorrowPromptTeaser(supabase: Client, tomorrowDate: string) {
+  const { data, error } = await supabase.rpc('get_tomorrow_prompt_teaser', { target_date: tomorrowDate })
+  if (error) throw error
+  return data
+}
+
 export async function getPastPrompts(supabase: Client, limit = 30) {
   const today = getTodayUTC()
   const { data, error } = await supabase

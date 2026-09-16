@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { getTodayPrompt, getPromptByDate } from '@/lib/api/prompts'
+import { getTodayPrompt, getPromptByDate, getTomorrowPromptTeaser } from '@/lib/api/prompts'
 import { getYesterdayUTC, getTomorrowUTC } from '@/lib/utils/dates'
 import { UnifiedPlayClient } from './UnifiedPlayClient'
 
@@ -49,9 +49,9 @@ export default async function UnifiedPlayPage({
     )
   }
 
-  const [yesterdaysPrompt, tomorrowsPrompt] = await Promise.all([
+  const [yesterdaysPrompt, tomorrowsPromptTeaser] = await Promise.all([
     getPromptByDate(supabase, getYesterdayUTC()).catch(() => null),
-    getPromptByDate(supabase, getTomorrowUTC()).catch(() => null),
+    getTomorrowPromptTeaser(supabase, getTomorrowUTC()).catch(() => null),
   ])
 
   return (
@@ -59,7 +59,7 @@ export default async function UnifiedPlayPage({
       currentUserId={user.id}
       editMode={edit === '1'}
       yesterdaysPrompt={yesterdaysPrompt ? { x: yesterdaysPrompt.x_axis_label, y: yesterdaysPrompt.y_axis_label } : null}
-      tomorrowsPromptTeaser={tomorrowsPrompt ? tomorrowsPrompt.x_axis_label : null}
+      tomorrowsPromptTeaser={tomorrowsPromptTeaser}
     />
   )
 }

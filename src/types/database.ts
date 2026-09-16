@@ -275,6 +275,10 @@ export type Database = {
         Args: Record<string, never>
         Returns: string
       }
+      get_tomorrow_prompt_teaser: {
+        Args: { target_date: string }
+        Returns: string | null
+      }
       group_accuracy_leaderboard: {
         Args: { gid: string; pid?: string | null }
         Returns: {
