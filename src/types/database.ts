@@ -232,6 +232,32 @@ export type Database = {
           }
         ]
       }
+      prompt_suggestions: {
+        Row: {
+          id: string
+          submitted_by: string | null
+          x_axis_label: string
+          y_axis_label: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          submitted_by?: string | null
+          x_axis_label: string
+          y_axis_label: string
+          created_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: [
+          {
+            foreignKeyName: "prompt_suggestions_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       group_submissions: {

@@ -4,6 +4,7 @@ import { getUserGroups } from '@/lib/api/groups'
 import { redirect } from 'next/navigation'
 import { formatDate } from '@/lib/utils/dates'
 import Link from 'next/link'
+import { SuggestPromptForm } from './SuggestPromptForm'
 
 export default async function HistoryPage() {
   const supabase = await createClient()
@@ -18,6 +19,7 @@ export default async function HistoryPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-black text-gray-800">History</h1>
+      <SuggestPromptForm currentUserId={user.id} />
       {prompts.length === 0 ? (
         <div className="card p-12 text-center">
           <p className="text-gray-400 text-lg font-bold">No past prompts yet</p>
