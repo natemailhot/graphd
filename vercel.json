@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/publish-results", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/rotate-prompt", "schedule": "5 7 * * *" }
+  ]
+}

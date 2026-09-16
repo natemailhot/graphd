@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { getTodayPrompt } from '@/lib/api/prompts'
+import { getTodayPrompt, getPromptByDate } from '@/lib/api/prompts'
 import { getUserGroups } from '@/lib/api/groups'
 import { getSubmissionStatus } from '@/lib/api/placements'
+import { getYesterdayUTC } from '@/lib/utils/dates'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { HomeClient } from './HomeClient'
 import { DailyProgressBanner } from './DailyProgressBanner'
 
@@ -11,9 +13,10 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [prompt, groups] = await Promise.all([
+  const [prompt, groups, yesterdaysPrompt] = await Promise.all([
     getTodayPrompt(supabase).catch(() => null),
     getUserGroups(supabase, user.id).catch(() => []),
+    getPromptByDate(supabase, getYesterdayUTC()).catch(() => null),
   ])
 
   // Fetch submission status for each group
@@ -41,6 +44,14 @@ export default async function HomePage() {
             <div className="text-2xl text-gray-200 font-black">vs</div>
             <p className="text-lg font-black text-rose-400">{prompt.y_axis_label}?</p>
           </div>
+          {yesterdaysPrompt && (
+            <Link
+              href="/history"
+              className="inline-block mt-4 text-xs font-bold text-gray-400 hover:text-violet-500 transition-colors"
+            >
+              ← Yesterday: {yesterdaysPrompt.x_axis_label} vs {yesterdaysPrompt.y_axis_label}
+            </Link>
+          )}
         </div>
       ) : (
         <div className="card p-8 text-center">
