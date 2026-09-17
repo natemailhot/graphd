@@ -6,6 +6,7 @@ export interface ShareTextInput {
   prompt: Prompt
   positions: AveragedPosition[]
   todayLeaderboard: LeaderboardRow[]
+  url?: string
 }
 
 export function buildShareText(input: ShareTextInput): string {
@@ -17,6 +18,8 @@ export function buildShareText(input: ShareTextInput): string {
   if (input.positions.length > 0) {
     sections.push(buildQuadrantSection(input.positions))
   }
+
+  if (input.url) sections.push(input.url)
 
   return sections.join('\n\n')
 }

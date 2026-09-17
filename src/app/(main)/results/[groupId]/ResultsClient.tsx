@@ -39,7 +39,10 @@ export function ResultsClient({ groupId, groupName, prompt, currentUserId, isHos
   const showResults = allSubmitted || overrideView || isPublished
 
   const handleShare = async () => {
-    const text = buildShareText({ groupName, prompt, positions: averaged, todayLeaderboard })
+    const url = prompt.prompt_date
+      ? `${window.location.origin}/results/${groupId}/${prompt.prompt_date}`
+      : undefined
+    const text = buildShareText({ groupName, prompt, positions: averaged, todayLeaderboard, url })
     if (navigator.share) {
       try {
         await navigator.share({ text })

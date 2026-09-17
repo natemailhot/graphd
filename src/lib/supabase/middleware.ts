@@ -2,6 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PREVIEW_PATHS = ['/play', '/groups/join']
+// Shared "graphd · group · date" result links need their own metadata/OG
+// image visible to unauthenticated link-preview crawlers; the page itself
+// still shows a sign-in prompt to real signed-out visitors.
+const PUBLIC_PREVIEW_PATTERN = /^\/results\/[^/]+\/[^/]+(\/opengraph-image.*)?$/
 
 export async function updateSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
@@ -32,7 +36,9 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublicPreview = PUBLIC_PREVIEW_PATHS.includes(request.nextUrl.pathname)
+  const isPublicPreview =
+    PUBLIC_PREVIEW_PATHS.includes(request.nextUrl.pathname) ||
+    PUBLIC_PREVIEW_PATTERN.test(request.nextUrl.pathname)
 
   if (
     !user &&

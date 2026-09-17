@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { getAvatarEmoji } from '@/lib/utils/avatarEmoji'
 
 const PUBLIC_PREVIEW_PATHS = ['/play', '/groups/join']
+const PUBLIC_PREVIEW_PATTERN = /^\/results\/[^/]+\/[^/]+$/
 
 export default async function MainLayout({
   children,
@@ -17,7 +18,9 @@ export default async function MainLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const hdrs = await headers()
-  const isPublicPreview = PUBLIC_PREVIEW_PATHS.includes(hdrs.get('x-pathname') ?? '')
+  const currentPathname = hdrs.get('x-pathname') ?? ''
+  const isPublicPreview =
+    PUBLIC_PREVIEW_PATHS.includes(currentPathname) || PUBLIC_PREVIEW_PATTERN.test(currentPathname)
 
   if (!user && !isPublicPreview) {
     redirect('/login')
