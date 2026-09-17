@@ -58,9 +58,14 @@ export function UnifiedPlayClient({ currentUserId, editMode = false, yesterdaysP
   )
 
   const tomorrowTeaser = tomorrowsPromptTeaser && (
-    <p className="text-center text-xs text-gray-300">
-      Sneak peek — tomorrow: <span className="font-bold text-gray-400">{tomorrowsPromptTeaser}...?</span>
-    </p>
+    <div className="card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-center">
+      <span className="text-lg">🔮</span>
+      <p className="text-sm text-gray-500">
+        <span className="font-black text-violet-500 uppercase tracking-wide text-xs">Sneak peek</span>
+        {' — tomorrow: '}
+        <span className="font-bold text-gray-700">{tomorrowsPromptTeaser}...?</span>
+      </p>
+    </div>
   )
 
   let content: React.ReactNode
