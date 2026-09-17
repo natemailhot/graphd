@@ -42,6 +42,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/callback') &&
     !request.nextUrl.pathname.startsWith('/how-it-works') &&
+    !request.nextUrl.pathname.startsWith('/api/cron') &&
     request.nextUrl.pathname !== '/'
   ) {
     const url = request.nextUrl.clone()
