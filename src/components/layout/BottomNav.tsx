@@ -28,6 +28,12 @@ const ICONS = {
       <path d="M9 2h6M12 2v3" />
     </>
   ),
+  results: (
+    <>
+      <path d="M4 20V10M12 20V4M20 20v-7" />
+      <path d="M2 20h20" />
+    </>
+  ),
 }
 
 function TabIcon({ name, active }: { name: keyof typeof ICONS; active: boolean }) {
@@ -53,6 +59,7 @@ export function BottomNav({ profile }: BottomNavProps) {
   const tabs = [
     { href: '/home', label: 'Home', icon: 'home' as const },
     { href: '/groups', label: 'Groups', icon: 'groups' as const },
+    { href: '/results', label: 'Results', icon: 'results' as const },
     { href: '/history', label: 'History', icon: 'history' as const },
   ]
 
