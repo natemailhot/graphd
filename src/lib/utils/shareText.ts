@@ -1,10 +1,9 @@
-import type { AveragedPosition, LeaderboardRow, Prompt } from '@/types/app'
+import type { LeaderboardRow, Prompt } from '@/types/app'
 import { formatDate } from '@/lib/utils/dates'
 
 export interface ShareTextInput {
   groupName: string
   prompt: Prompt
-  positions: AveragedPosition[]
   todayLeaderboard: LeaderboardRow[]
   url?: string
 }
@@ -14,10 +13,6 @@ export function buildShareText(input: ShareTextInput): string {
 
   const accuracySection = buildAccuracySection(input.todayLeaderboard)
   if (accuracySection) sections.push(accuracySection)
-
-  if (input.positions.length > 0) {
-    sections.push(buildQuadrantSection(input.positions))
-  }
 
   if (input.url) sections.push(input.url)
 
@@ -44,26 +39,6 @@ function buildAccuracySection(rows: LeaderboardRow[]): string | null {
   lines.push(`🥇 Most accurate: ${most.display_name} — ${most.avg_match}%`)
   if (least.user_id !== most.user_id) {
     lines.push(`🐢 Least accurate: ${least.display_name} — ${least.avg_match}%`)
-  }
-  return lines.join('\n')
-}
-
-const QUADRANTS: { emoji: string; test: (x: number, y: number) => boolean }[] = [
-  { emoji: '↗️', test: (x, y) => x >= 0.5 && y >= 0.5 },
-  { emoji: '↖️', test: (x, y) => x < 0.5 && y >= 0.5 },
-  { emoji: '↘️', test: (x, y) => x >= 0.5 && y < 0.5 },
-  { emoji: '↙️', test: (x, y) => x < 0.5 && y < 0.5 },
-]
-
-function buildQuadrantSection(positions: AveragedPosition[]): string {
-  const lines = ['📍 Where Everyone Landed']
-  for (const quadrant of QUADRANTS) {
-    const names = positions
-      .filter(p => quadrant.test(p.x, p.y))
-      .map(p => p.profile.display_name.split(' ')[0])
-    if (names.length > 0) {
-      lines.push(`${quadrant.emoji} ${names.join(', ')}`)
-    }
   }
   return lines.join('\n')
 }

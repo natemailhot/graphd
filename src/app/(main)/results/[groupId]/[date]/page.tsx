@@ -18,8 +18,8 @@ export async function generateMetadata({
   ])
   const groupName = group?.name ?? 'Graphd'
   const title = prompt
-    ? `${groupName} · ${formatDate(date)} — ${prompt.x_axis_label} vs ${prompt.y_axis_label}`
-    : `${groupName} on Graphd`
+    ? `Results: ${groupName} · ${formatDate(date)} — ${prompt.x_axis_label} vs ${prompt.y_axis_label}`
+    : `Results: ${groupName} on Graphd`
   const description = prompt
     ? `See where everyone landed on "${prompt.x_axis_label} vs ${prompt.y_axis_label}" →`
     : 'A daily social game where you place your friends on scatter plots.'

@@ -42,7 +42,7 @@ export function ResultsClient({ groupId, groupName, prompt, currentUserId, isHos
     const url = prompt.prompt_date
       ? `${window.location.origin}/results/${groupId}/${prompt.prompt_date}`
       : undefined
-    const text = buildShareText({ groupName, prompt, positions: averaged, todayLeaderboard, url })
+    const text = buildShareText({ groupName, prompt, todayLeaderboard, url })
     if (navigator.share) {
       try {
         await navigator.share({ text })
