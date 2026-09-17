@@ -29,10 +29,24 @@ export function UnifiedResultsClient({ groups, prompt, currentUserId, date, avai
   const router = useRouter()
   const isToday = date === getTodayUTC()
 
+  const dateIndex = availableDates.indexOf(date)
+  const newerDate = dateIndex > 0 ? availableDates[dateIndex - 1] : null
+  const olderDate = dateIndex !== -1 && dateIndex < availableDates.length - 1 ? availableDates[dateIndex + 1] : null
+
   return (
     <div className="space-y-4">
       <div className="card p-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
+          {availableDates.length > 1 && (
+            <button
+              onClick={() => olderDate && router.push(`/results?date=${olderDate}`)}
+              disabled={!olderDate}
+              aria-label="Older day"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-violet-400 border-2 border-violet-200 bg-violet-50 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-violet-100 transition-colors"
+            >
+              ‹
+            </button>
+          )}
           {availableDates.length > 1 ? (
             <select
               value={date}
@@ -47,6 +61,16 @@ export function UnifiedResultsClient({ groups, prompt, currentUserId, date, avai
             <span className="inline-block px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-violet-50 text-violet-400 border-2 border-violet-200">
               {formatDate(date)}
             </span>
+          )}
+          {availableDates.length > 1 && (
+            <button
+              onClick={() => newerDate && router.push(`/results?date=${newerDate}`)}
+              disabled={!newerDate}
+              aria-label="Newer day"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-violet-400 border-2 border-violet-200 bg-violet-50 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-violet-100 transition-colors"
+            >
+              ›
+            </button>
           )}
         </div>
         <div className="space-y-3">
